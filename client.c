@@ -31,6 +31,8 @@ int main(int argc, char** argv)
 
     alpha_client_finalize(alpha_clt);
 
+    margo_shutdown_remote_instance(mid, svr_addr); 
+
     margo_addr_free(mid, svr_addr);
 
     margo_finalize(mid);

@@ -23,6 +23,8 @@ int main(int argc, char** argv)
 
     margo_addr_free(mid,my_address);
 
+    margo_enable_remote_shutdown(mid);
+
     margo_wait_for_finalize(mid);
 
     return 0;
