@@ -42,6 +42,20 @@ int alpha_provider_register(
 int alpha_provider_destroy(
         alpha_provider_t provider);
 
+/**
+ *  * @brief Creates handles and connections to downstream microservice dependencies
+ *   *
+ *    * @param[in] mid Margo instance
+ *     *  @param[in] p provider id
+ *      *  @param[in] svr_addr server address
+ *       *
+ *        * @return ALPHA_SUCCESS or error code defined in alpha-common.h
+ *         */
+void alpha_create_downstream_handles(
+	margo_instance_id mid, 
+	uint16_t p, 
+	hg_addr_t svr_addr);
+
 #ifdef __cplusplus
 }
 #endif

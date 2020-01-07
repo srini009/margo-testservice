@@ -1,4 +1,5 @@
 #include "alpha-server.h"
+#include "beta-client.h"
 #include "types.h"
 
 struct alpha_provider {
@@ -11,6 +12,10 @@ static void alpha_finalize_provider(void* p);
 
 DECLARE_MARGO_RPC_HANDLER(alpha_sum_ult);
 static void alpha_sum_ult(hg_handle_t h);
+
+beta_client_t beta_clt;
+beta_provider_handle_t beta_ph;
+
 /* add other RPC declarations here */
 
 int alpha_provider_register(
@@ -50,8 +55,13 @@ int alpha_provider_register(
 
     margo_provider_push_finalize_callback(mid, p, &alpha_finalize_provider, p);
 
-    //*provider = p;
     return ALPHA_SUCCESS;
+}
+
+void alpha_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t svr_addr)
+{
+    beta_client_init(mid, &beta_clt);
+    beta_provider_handle_create(beta_clt, svr_addr, p, &beta_ph);
 }
 
 static void alpha_finalize_provider(void* p)
@@ -70,6 +80,11 @@ int alpha_provider_destroy(
     /* call the callback */
     alpha_finalize_provider(provider);
 
+    beta_provider_handle_release(beta_ph);
+
+    beta_client_finalize(beta_clt);
+ 
+
     return ALPHA_SUCCESS;
 }
 
@@ -79,6 +94,7 @@ static void alpha_sum_ult(hg_handle_t h)
     hg_return_t ret;
     sum_in_t     in;
     sum_out_t   out;
+    int32_t partial_result;
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
@@ -89,6 +105,8 @@ static void alpha_sum_ult(hg_handle_t h)
 
     out.ret = in.x + in.y;
     printf("Computed %d + %d = %d\n",in.x,in.y,out.ret);
+
+    beta_compute_sum(beta_ph, 1, 1, &partial_result);
 
     ret = margo_respond(h, &out);
 
