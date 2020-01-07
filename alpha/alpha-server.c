@@ -103,7 +103,11 @@ static void alpha_sum_ult(hg_handle_t h)
 
     ret = margo_get_input(h, &in);
 
-    out.ret = in.x + in.y;
+    out.ret = 0;
+
+    for (int i = 0 ; i < 1000000000; i++)
+      out.ret = out.ret + (in.x + in.y)*2 + i;
+
     printf("Computed %d + %d = %d\n",in.x,in.y,out.ret);
 
     beta_compute_sum(beta_ph, 1, 1, &partial_result);

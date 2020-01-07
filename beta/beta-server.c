@@ -1,6 +1,8 @@
 #include "beta-server.h"
 #include "types.h"
 
+#define ARRAY_SIZE 1000000000
+
 struct beta_provider {
     margo_instance_id mid;
     hg_id_t sum_id;
@@ -12,6 +14,7 @@ static void beta_finalize_provider(void* p);
 DECLARE_MARGO_RPC_HANDLER(beta_sum_ult);
 static void beta_sum_ult(hg_handle_t h);
 /* add other RPC declarations here */
+int *a, *c;
 
 int beta_provider_register(
         margo_instance_id mid,
@@ -50,6 +53,9 @@ int beta_provider_register(
 
     margo_provider_push_finalize_callback(mid, p, &beta_finalize_provider, p);
 
+    a = (int*)malloc(ARRAY_SIZE*sizeof(int));
+    c = (int*)malloc(ARRAY_SIZE*sizeof(int));
+
     //*provider = p;
     return BETA_SUCCESS;
 }
@@ -69,6 +75,8 @@ int beta_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     beta_finalize_provider(provider);
+    free(a);
+    free(c);
 
     return BETA_SUCCESS;
 }
@@ -87,8 +95,12 @@ static void beta_sum_ult(hg_handle_t h)
 
     ret = margo_get_input(h, &in);
 
+    for(int i = 0 ; i < ARRAY_SIZE; i++)
+      c[i] = a[i];
+
+    fprintf(stderr, "Copied out the elements.\n");
+
     out.ret = in.x + in.y;
-    printf("Computed %d + %d = %d\n",in.x,in.y,out.ret);
 
     ret = margo_respond(h, &out);
 
