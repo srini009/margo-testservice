@@ -26,7 +26,6 @@ int main(int argc, char** argv)
 
     int32_t result;
     alpha_compute_sum(alpha_ph, 45, 23, &result);
-    alpha_compute_sum(alpha_ph, 69, 69, &result);
 
     alpha_provider_handle_release(alpha_ph);
 
