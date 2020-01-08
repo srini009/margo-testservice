@@ -1,12 +1,15 @@
 #include "delta-server.h"
 #include "types.h"
 
-#define ARRAY_SIZE 1000000000
-
 struct delta_provider {
     margo_instance_id mid;
     hg_id_t sum_id;
     /* other provider-specific data */
+};
+
+struct rec
+{
+    int x,y,z;
 };
 
 static void delta_finalize_provider(void* p);
@@ -14,7 +17,6 @@ static void delta_finalize_provider(void* p);
 DECLARE_MARGO_RPC_HANDLER(delta_sum_ult);
 static void delta_sum_ult(hg_handle_t h);
 /* add other RPC declarations here */
-int *a, *c;
 
 int delta_provider_register(
         margo_instance_id mid,
@@ -53,10 +55,6 @@ int delta_provider_register(
 
     margo_provider_push_finalize_callback(mid, p, &delta_finalize_provider, p);
 
-    a = (int*)malloc(ARRAY_SIZE*sizeof(int));
-    c = (int*)malloc(ARRAY_SIZE*sizeof(int));
-
-    //*provider = p;
     return DELTA_SUCCESS;
 }
 
@@ -75,8 +73,6 @@ int delta_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     delta_finalize_provider(provider);
-    free(a);
-    free(c);
 
     return DELTA_SUCCESS;
 }
@@ -88,6 +84,9 @@ static void delta_sum_ult(hg_handle_t h)
     sum_in_t     in;
     sum_out_t   out;
 
+    struct rec r;
+
+    FILE *fp = fopen("/dev/shm/junk", "w");
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     const struct hg_info* info = margo_get_info(h);
@@ -95,9 +94,13 @@ static void delta_sum_ult(hg_handle_t h)
 
     ret = margo_get_input(h, &in);
 
-    for(int i = 0 ; i < ARRAY_SIZE; i++)
-      c[i] = a[i];
+    for(int i = 0; i < 100000000; i++) {
+      r.x = i;
+      fwrite(&r,sizeof(struct rec),1,fp);
+    }
 
+    //remove("/dev/shm/junk");
+    fclose(fp);
     fprintf(stderr, "Delta is done with its job.\n");
 
     out.ret = in.x + in.y;
