@@ -25,12 +25,12 @@ int delta_client_init(margo_instance_id mid, delta_client_t* client)
 
     hg_bool_t flag;
     hg_id_t id;
-    margo_registered_name(mid, "delta_sum", &id, &flag);
+    margo_registered_name(mid, "delta_do_work", &id, &flag);
 
     if(flag == HG_TRUE) {
-        margo_registered_name(mid, "delta_sum", &c->sum_id, &flag);
+        margo_registered_name(mid, "delta_do_work", &c->sum_id, &flag);
     } else {
-        c->sum_id = MARGO_REGISTER(mid, "delta_sum", sum_in_t, sum_out_t, NULL);
+        c->sum_id = MARGO_REGISTER(mid, "delta_do_work", delta_in_t, delta_out_t, NULL);
     }
 
     *client = c;
@@ -100,19 +100,19 @@ int delta_provider_handle_release(delta_provider_handle_t handle)
     return DELTA_SUCCESS;
 }
 
-int delta_compute_sum(
+int delta_do_work(
         delta_provider_handle_t handle,
-        int32_t x,
-        int32_t y,
+        int32_t n,
+        hg_bulk_t bulk,
         int32_t* result)
 {
     hg_handle_t   h;
-    sum_in_t     in;
-    sum_out_t   out;
+    delta_in_t     in;
+    delta_out_t   out;
     hg_return_t ret;
 
-    in.x = x;
-    in.y = y;
+    in.n = n;
+    in.bulk = bulk;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

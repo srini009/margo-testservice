@@ -81,10 +81,10 @@ int delta_provider_handle_release(delta_provider_handle_t handle);
  *         *
  *          * @return DELTA_SUCCESS or error code defined in delta-common.h
  *           */
-int delta_compute_sum(
+int delta_do_work(
         delta_provider_handle_t handle,
-        int32_t x,
-        int32_t y,
+        int32_t n,
+        hg_bulk_t bulk,
         int32_t* result);
 
 #endif

@@ -14,8 +14,8 @@ struct rec
 
 static void delta_finalize_provider(void* p);
 
-DECLARE_MARGO_RPC_HANDLER(delta_sum_ult);
-static void delta_sum_ult(hg_handle_t h);
+DECLARE_MARGO_RPC_HANDLER(delta_do_work_ult);
+static void delta_do_work_ult(hg_handle_t h);
 /* add other RPC declarations here */
 
 int delta_provider_register(
@@ -34,7 +34,7 @@ int delta_provider_register(
         return DELTA_FAILURE;
     }
 
-    margo_provider_registered_name(mid, "delta_sum", provider_id, &id, &flag);
+    margo_provider_registered_name(mid, "delta_do_work", provider_id, &id, &flag);
     if(flag == HG_TRUE) {
         fprintf(stderr, "delta_provider_register(): a provider with the same provider id (%d) already exists.\n", provider_id);
         return DELTA_FAILURE;
@@ -46,9 +46,9 @@ int delta_provider_register(
 
     p->mid = mid;
 
-    id = MARGO_REGISTER_PROVIDER(mid, "delta_sum",
-            sum_in_t, sum_out_t,
-            delta_sum_ult, provider_id, pool);
+    id = MARGO_REGISTER_PROVIDER(mid, "delta_do_work",
+            delta_in_t, delta_out_t,
+            delta_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
     /* add other RPC registration here */
@@ -78,11 +78,11 @@ int delta_provider_destroy(
 }
 
 
-static void delta_sum_ult(hg_handle_t h)
+static void delta_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    sum_in_t     in;
-    sum_out_t   out;
+    delta_in_t     in;
+    delta_out_t   out;
 
     struct rec r;
 
@@ -94,6 +94,7 @@ static void delta_sum_ult(hg_handle_t h)
 
     ret = margo_get_input(h, &in);
 
+    /* Do I/O work */
     for(int i = 0; i < 100000000; i++) {
       r.x = i;
       fwrite(&r,sizeof(struct rec),1,fp);
@@ -103,10 +104,10 @@ static void delta_sum_ult(hg_handle_t h)
     fclose(fp);
     fprintf(stderr, "Delta is done with its job.\n");
 
-    out.ret = in.x + in.y;
+    out.ret = 0;
 
     ret = margo_respond(h, &out);
 
     ret = margo_free_input(h, &in);
 }
-DEFINE_MARGO_RPC_HANDLER(delta_sum_ult)
+DEFINE_MARGO_RPC_HANDLER(delta_do_work_ult)

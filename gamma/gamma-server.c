@@ -1,8 +1,8 @@
+#include <assert.h>
 #include "gamma-server.h"
 #include "types.h"
 #include "delta-client.h"
 
-#define ARRAY_SIZE 1000000000
 
 struct gamma_provider {
     margo_instance_id mid;
@@ -12,10 +12,9 @@ struct gamma_provider {
 
 static void gamma_finalize_provider(void* p);
 
-DECLARE_MARGO_RPC_HANDLER(gamma_sum_ult);
-static void gamma_sum_ult(hg_handle_t h);
+DECLARE_MARGO_RPC_HANDLER(gamma_do_work_ult);
+static void gamma_do_work_ult(hg_handle_t h);
 /* add other RPC declarations here */
-int *a, *c;
 delta_client_t delta_clt;
 delta_provider_handle_t delta_ph;
 
@@ -35,7 +34,7 @@ int gamma_provider_register(
         return GAMMA_FAILURE;
     }
 
-    margo_provider_registered_name(mid, "gamma_sum", provider_id, &id, &flag);
+    margo_provider_registered_name(mid, "gamma_do_work", provider_id, &id, &flag);
     if(flag == HG_TRUE) {
         fprintf(stderr, "gamma_provider_register(): a provider with the same provider id (%d) already exists.\n", provider_id);
         return GAMMA_FAILURE;
@@ -47,17 +46,14 @@ int gamma_provider_register(
 
     p->mid = mid;
 
-    id = MARGO_REGISTER_PROVIDER(mid, "gamma_sum",
-            sum_in_t, sum_out_t,
-            gamma_sum_ult, provider_id, pool);
+    id = MARGO_REGISTER_PROVIDER(mid, "gamma_do_work",
+            gamma_in_t, gamma_out_t,
+            gamma_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
     /* add other RPC registration here */
 
     margo_provider_push_finalize_callback(mid, p, &gamma_finalize_provider, p);
-
-    a = (int*)malloc(ARRAY_SIZE*sizeof(int));
-    c = (int*)malloc(ARRAY_SIZE*sizeof(int));
 
     //*provider = p;
     return GAMMA_SUCCESS;
@@ -84,8 +80,6 @@ int gamma_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     gamma_finalize_provider(provider);
-    free(a);
-    free(c);
 
     delta_provider_handle_release(delta_ph);
 
@@ -95,32 +89,49 @@ int gamma_provider_destroy(
 }
 
 
-static void gamma_sum_ult(hg_handle_t h)
+static void gamma_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    sum_in_t     in;
-    sum_out_t   out;
+    gamma_in_t     in;
+    gamma_out_t   out;
 
-    int32_t partial_result; 
+    int32_t partial_result;
+    int32_t* values;
+    hg_bulk_t local_bulk;
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     const struct hg_info* info = margo_get_info(h);
+
     gamma_provider_t provider = (gamma_provider_t)margo_registered_data(mid, info->id);
 
     ret = margo_get_input(h, &in);
 
-    for(int i = 0 ; i < ARRAY_SIZE; i++)
-      c[i] = a[i];
+    /* Pull in data from alpha-client through RDMA, simulating a network op */
+     values = calloc(in.n, sizeof(*values));
+    hg_size_t buf_size = in.n * sizeof(*values);
+
+    ret = margo_bulk_create(mid, 1, (void**)&values, &buf_size,
+            HG_BULK_WRITE_ONLY, &local_bulk);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_bulk_transfer(mid, HG_BULK_PULL, info->addr,
+            in.bulk, 0, local_bulk, 0, buf_size);
+    assert(ret == HG_SUCCESS);
 
     fprintf(stderr, "Gamma done with it's job.\n");
 
-    out.ret = in.x + in.y;
+    ret = margo_bulk_free(local_bulk);
+    assert(ret);
 
-    delta_compute_sum(delta_ph, 1, 1, &partial_result);
+    free(values);
+
+    out.ret = 0;
+
+    delta_do_work(delta_ph, in.n, in.bulk, &partial_result);
 
     ret = margo_respond(h, &out);
 
     ret = margo_free_input(h, &in);
 }
-DEFINE_MARGO_RPC_HANDLER(gamma_sum_ult)
+DEFINE_MARGO_RPC_HANDLER(gamma_do_work_ult)

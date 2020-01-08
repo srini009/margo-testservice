@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "beta-server.h"
 #include "types.h"
 #include "gamma-client.h"
@@ -103,6 +104,7 @@ static void beta_do_work_ult(hg_handle_t h)
     beta_out_t   out;
     
     int32_t partial_result;
+
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     const struct hg_info* info = margo_get_info(h);
@@ -118,7 +120,7 @@ static void beta_do_work_ult(hg_handle_t h)
 
     out.ret = 0;
 
-    gamma_compute_sum(gamma_ph, 1, 1, &partial_result);
+    gamma_do_work(gamma_ph, in.n, in.bulk, &partial_result);
 
     ret = margo_respond(h, &out);
 

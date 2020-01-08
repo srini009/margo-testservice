@@ -81,10 +81,10 @@ int gamma_provider_handle_release(gamma_provider_handle_t handle);
  *         *
  *          * @return GAMMA_SUCCESS or error code defined in gamma-common.h
  *           */
-int gamma_compute_sum(
+int gamma_do_work(
         gamma_provider_handle_t handle,
-        int32_t x,
-        int32_t y,
+        int32_t n,
+        hg_bulk_t bulk,
         int32_t* result);
 
 #endif

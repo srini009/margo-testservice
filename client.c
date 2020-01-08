@@ -26,12 +26,12 @@ int main(int argc, char** argv)
 
     int32_t result;
 
-    int32_t values[100000];
-    hg_size_t size = 100000*sizeof(int32_t);
+    int32_t values[1000];
+    hg_size_t size = 1000*sizeof(int32_t);
 
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
-    alpha_do_work(alpha_ph, 100000, local_bulk, &result);
+    alpha_do_work(alpha_ph, 1000, local_bulk, &result);
 
     alpha_provider_handle_release(alpha_ph);
 
