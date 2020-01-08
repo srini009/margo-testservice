@@ -25,12 +25,12 @@ int alpha_client_init(margo_instance_id mid, alpha_client_t* client)
 
     hg_bool_t flag;
     hg_id_t id;
-    margo_registered_name(mid, "alpha_sum", &id, &flag);
+    margo_registered_name(mid, "alpha_do_work", &id, &flag);
 
     if(flag == HG_TRUE) {
-        margo_registered_name(mid, "alpha_sum", &c->sum_id, &flag);
+        margo_registered_name(mid, "alpha_do_work", &c->sum_id, &flag);
     } else {
-        c->sum_id = MARGO_REGISTER(mid, "alpha_sum", sum_in_t, sum_out_t, NULL);
+        c->sum_id = MARGO_REGISTER(mid, "alpha_do_work", alpha_in_t, alpha_out_t, NULL);
     }
 
     *client = c;
@@ -100,19 +100,19 @@ int alpha_provider_handle_release(alpha_provider_handle_t handle)
     return ALPHA_SUCCESS;
 }
 
-int alpha_compute_sum(
+int alpha_do_work(
         alpha_provider_handle_t handle,
         int32_t x,
-        int32_t y,
+        hg_bulk_t local_bulk,
         int32_t* result)
 {
     hg_handle_t   h;
-    sum_in_t     in;
-    sum_out_t   out;
+    alpha_in_t     in;
+    alpha_out_t   out;
     hg_return_t ret;
 
-    in.x = x;
-    in.y = y;
+    in.n = x;
+    in.bulk = local_bulk;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

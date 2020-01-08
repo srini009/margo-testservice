@@ -10,8 +10,8 @@ struct alpha_provider {
 
 static void alpha_finalize_provider(void* p);
 
-DECLARE_MARGO_RPC_HANDLER(alpha_sum_ult);
-static void alpha_sum_ult(hg_handle_t h);
+DECLARE_MARGO_RPC_HANDLER(alpha_do_work_ult);
+static void alpha_do_work_ult(hg_handle_t h);
 
 beta_client_t beta_clt;
 beta_provider_handle_t beta_ph;
@@ -46,9 +46,9 @@ int alpha_provider_register(
 
     p->mid = mid;
 
-    id = MARGO_REGISTER_PROVIDER(mid, "alpha_sum",
-            sum_in_t, sum_out_t,
-            alpha_sum_ult, provider_id, pool);
+    id = MARGO_REGISTER_PROVIDER(mid, "alpha_do_work",
+            alpha_in_t, alpha_out_t,
+            alpha_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
     /* add other RPC registration here */
@@ -89,11 +89,11 @@ int alpha_provider_destroy(
 }
 
 
-static void alpha_sum_ult(hg_handle_t h)
+static void alpha_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    sum_in_t     in;
-    sum_out_t   out;
+    alpha_in_t     in;
+    alpha_out_t   out;
     int32_t partial_result;
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
@@ -105,10 +105,11 @@ static void alpha_sum_ult(hg_handle_t h)
 
     out.ret = 0;
 
+    /* Bogus CPU-bound computation */
     for (int i = 0 ; i < 1000000000; i++)
-      out.ret = out.ret + (in.x + in.y)*2 + i;
+      out.ret = out.ret + (45 + 69)*2 + i;
 
-    printf("Computed %d + %d = %d\n",in.x,in.y,out.ret);
+    fprintf(stderr, "Alpha done with it's job\n");
 
     beta_compute_sum(beta_ph, 1, 1, &partial_result);
 
@@ -116,4 +117,4 @@ static void alpha_sum_ult(hg_handle_t h)
 
     ret = margo_free_input(h, &in);
 }
-DEFINE_MARGO_RPC_HANDLER(alpha_sum_ult)
+DEFINE_MARGO_RPC_HANDLER(alpha_do_work_ult)

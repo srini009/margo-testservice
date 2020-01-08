@@ -25,7 +25,13 @@ int main(int argc, char** argv)
     alpha_provider_handle_create(alpha_clt, svr_addr, provider_id, &alpha_ph);
 
     int32_t result;
-    alpha_compute_sum(alpha_ph, 45, 23, &result);
+
+    int32_t values[100000];
+    hg_size_t size = 100000*sizeof(int32_t);
+
+    hg_bulk_t local_bulk;
+    margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
+    alpha_do_work(alpha_ph, 100000, local_bulk, &result);
 
     alpha_provider_handle_release(alpha_ph);
 
