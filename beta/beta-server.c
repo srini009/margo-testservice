@@ -1,5 +1,6 @@
 #include "beta-server.h"
 #include "types.h"
+#include "gamma-client.h"
 
 #define ARRAY_SIZE 1000000000
 
@@ -8,6 +9,9 @@ struct beta_provider {
     hg_id_t sum_id;
     /* other provider-specific data */
 };
+
+gamma_client_t gamma_clt;
+gamma_provider_handle_t gamma_ph;
 
 static void beta_finalize_provider(void* p);
 
@@ -60,6 +64,12 @@ int beta_provider_register(
     return BETA_SUCCESS;
 }
 
+void beta_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t svr_addr)
+{
+    gamma_client_init(mid, &gamma_clt);
+    gamma_provider_handle_create(gamma_clt, svr_addr, p, &gamma_ph);
+}
+
 static void beta_finalize_provider(void* p)
 {
     beta_provider_t provider = (beta_provider_t)p;
@@ -75,6 +85,10 @@ int beta_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     beta_finalize_provider(provider);
+
+    gamma_provider_handle_release(gamma_ph);
+
+    gamma_client_finalize(gamma_clt);
     free(a);
     free(c);
 
@@ -87,7 +101,8 @@ static void beta_sum_ult(hg_handle_t h)
     hg_return_t ret;
     sum_in_t     in;
     sum_out_t   out;
-
+    
+    int32_t partial_result;
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     const struct hg_info* info = margo_get_info(h);
@@ -101,6 +116,8 @@ static void beta_sum_ult(hg_handle_t h)
     fprintf(stderr, "Copied out the elements.\n");
 
     out.ret = in.x + in.y;
+
+    gamma_compute_sum(gamma_ph, 1, 1, &partial_result);
 
     ret = margo_respond(h, &out);
 
