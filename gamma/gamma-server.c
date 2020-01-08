@@ -1,5 +1,6 @@
 #include "gamma-server.h"
 #include "types.h"
+#include "delta-client.h"
 
 #define ARRAY_SIZE 1000000000
 
@@ -15,6 +16,8 @@ DECLARE_MARGO_RPC_HANDLER(gamma_sum_ult);
 static void gamma_sum_ult(hg_handle_t h);
 /* add other RPC declarations here */
 int *a, *c;
+delta_client_t delta_clt;
+delta_provider_handle_t delta_ph;
 
 int gamma_provider_register(
         margo_instance_id mid,
@@ -60,6 +63,12 @@ int gamma_provider_register(
     return GAMMA_SUCCESS;
 }
 
+void gamma_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t svr_addr)
+{
+    delta_client_init(mid, &delta_clt);
+    delta_provider_handle_create(delta_clt, svr_addr, p, &delta_ph);
+}
+
 static void gamma_finalize_provider(void* p)
 {
     gamma_provider_t provider = (gamma_provider_t)p;
@@ -78,6 +87,10 @@ int gamma_provider_destroy(
     free(a);
     free(c);
 
+    delta_provider_handle_release(delta_ph);
+
+    delta_client_finalize(delta_clt);
+
     return GAMMA_SUCCESS;
 }
 
@@ -87,6 +100,8 @@ static void gamma_sum_ult(hg_handle_t h)
     hg_return_t ret;
     sum_in_t     in;
     sum_out_t   out;
+
+    int32_t partial_result; 
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
@@ -101,6 +116,8 @@ static void gamma_sum_ult(hg_handle_t h)
     fprintf(stderr, "Gamma done with it's job.\n");
 
     out.ret = in.x + in.y;
+
+    delta_compute_sum(delta_ph, 1, 1, &partial_result);
 
     ret = margo_respond(h, &out);
 

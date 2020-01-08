@@ -4,6 +4,7 @@
 #include "alpha-server.h"
 #include "beta-server.h"
 #include "gamma-server.h"
+#include "delta-server.h"
 
 int main(int argc, char** argv)
 {
@@ -20,9 +21,11 @@ int main(int argc, char** argv)
     alpha_provider_register(mid, 42, ALPHA_ABT_POOL_DEFAULT, ALPHA_PROVIDER_IGNORE);
     beta_provider_register(mid, 42, BETA_ABT_POOL_DEFAULT, BETA_PROVIDER_IGNORE);
     gamma_provider_register(mid, 42, GAMMA_ABT_POOL_DEFAULT, GAMMA_PROVIDER_IGNORE);
+    delta_provider_register(mid, 42, DELTA_ABT_POOL_DEFAULT, DELTA_PROVIDER_IGNORE);
 
     alpha_create_downstream_handles(mid, 42, my_address);
     beta_create_downstream_handles(mid, 42, my_address);
+    gamma_create_downstream_handles(mid, 42, my_address);
 
     margo_addr_free(mid,my_address);
 
