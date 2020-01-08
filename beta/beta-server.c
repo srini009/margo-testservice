@@ -15,8 +15,8 @@ gamma_provider_handle_t gamma_ph;
 
 static void beta_finalize_provider(void* p);
 
-DECLARE_MARGO_RPC_HANDLER(beta_sum_ult);
-static void beta_sum_ult(hg_handle_t h);
+DECLARE_MARGO_RPC_HANDLER(beta_do_work_ult);
+static void beta_do_work_ult(hg_handle_t h);
 /* add other RPC declarations here */
 int *a, *c;
 
@@ -36,7 +36,7 @@ int beta_provider_register(
         return BETA_FAILURE;
     }
 
-    margo_provider_registered_name(mid, "beta_sum", provider_id, &id, &flag);
+    margo_provider_registered_name(mid, "beta_do_work", provider_id, &id, &flag);
     if(flag == HG_TRUE) {
         fprintf(stderr, "beta_provider_register(): a provider with the same provider id (%d) already exists.\n", provider_id);
         return BETA_FAILURE;
@@ -48,9 +48,9 @@ int beta_provider_register(
 
     p->mid = mid;
 
-    id = MARGO_REGISTER_PROVIDER(mid, "beta_sum",
-            sum_in_t, sum_out_t,
-            beta_sum_ult, provider_id, pool);
+    id = MARGO_REGISTER_PROVIDER(mid, "beta_do_work",
+            beta_in_t, beta_out_t,
+            beta_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
     /* add other RPC registration here */
@@ -96,11 +96,11 @@ int beta_provider_destroy(
 }
 
 
-static void beta_sum_ult(hg_handle_t h)
+static void beta_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    sum_in_t     in;
-    sum_out_t   out;
+    beta_in_t     in;
+    beta_out_t   out;
     
     int32_t partial_result;
     margo_instance_id mid = margo_hg_handle_get_instance(h);
@@ -110,12 +110,13 @@ static void beta_sum_ult(hg_handle_t h)
 
     ret = margo_get_input(h, &in);
 
+    /* Dummy memory-bound operation */
     for(int i = 0 ; i < ARRAY_SIZE; i++)
       c[i] = a[i];
 
-    fprintf(stderr, "Copied out the elements.\n");
+    fprintf(stderr, "Beta done with it's job.\n");
 
-    out.ret = in.x + in.y;
+    out.ret = 0;
 
     gamma_compute_sum(gamma_ph, 1, 1, &partial_result);
 
@@ -123,4 +124,4 @@ static void beta_sum_ult(hg_handle_t h)
 
     ret = margo_free_input(h, &in);
 }
-DEFINE_MARGO_RPC_HANDLER(beta_sum_ult)
+DEFINE_MARGO_RPC_HANDLER(beta_do_work_ult)

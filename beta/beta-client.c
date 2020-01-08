@@ -25,12 +25,12 @@ int beta_client_init(margo_instance_id mid, beta_client_t* client)
 
     hg_bool_t flag;
     hg_id_t id;
-    margo_registered_name(mid, "beta_sum", &id, &flag);
+    margo_registered_name(mid, "beta_do_work", &id, &flag);
 
     if(flag == HG_TRUE) {
-        margo_registered_name(mid, "beta_sum", &c->sum_id, &flag);
+        margo_registered_name(mid, "beta_do_work", &c->sum_id, &flag);
     } else {
-        c->sum_id = MARGO_REGISTER(mid, "beta_sum", sum_in_t, sum_out_t, NULL);
+        c->sum_id = MARGO_REGISTER(mid, "beta_do_work", beta_in_t, beta_out_t, NULL);
     }
 
     *client = c;
@@ -100,19 +100,19 @@ int beta_provider_handle_release(beta_provider_handle_t handle)
     return BETA_SUCCESS;
 }
 
-int beta_compute_sum(
+int beta_do_work(
         beta_provider_handle_t handle,
-        int32_t x,
-        int32_t y,
+        int32_t n,
+        hg_bulk_t bulk,
         int32_t* result)
 {
     hg_handle_t   h;
-    sum_in_t     in;
-    sum_out_t   out;
+    beta_in_t     in;
+    beta_out_t   out;
     hg_return_t ret;
 
-    in.x = x;
-    in.y = y;
+    in.n = n;
+    in.bulk = bulk;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

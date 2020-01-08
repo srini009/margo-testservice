@@ -109,9 +109,9 @@ static void alpha_do_work_ult(hg_handle_t h)
     for (int i = 0 ; i < 1000000000; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
-    fprintf(stderr, "Alpha done with it's job\n");
+    fprintf(stderr, "Alpha done with it's job.\n");
 
-    beta_compute_sum(beta_ph, 1, 1, &partial_result);
+    beta_do_work(beta_ph, in.n, in.bulk, &partial_result);
 
     ret = margo_respond(h, &out);
 

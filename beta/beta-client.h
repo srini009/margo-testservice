@@ -81,10 +81,10 @@ int beta_provider_handle_release(beta_provider_handle_t handle);
  *         *
  *          * @return BETA_SUCCESS or error code defined in beta-common.h
  *           */
-int beta_compute_sum(
+int beta_do_work(
         beta_provider_handle_t handle,
-        int32_t x,
-        int32_t y,
+        int32_t n,
+        hg_bulk_t bulk,
         int32_t* result);
 
 #endif
