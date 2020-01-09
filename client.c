@@ -2,6 +2,7 @@
 #include <margo.h>
 #include "alpha-client.h"
 #include "common.h"
+#include <mpi.h>
 
 int main(int argc, char** argv)
 {
@@ -9,6 +10,10 @@ int main(int argc, char** argv)
         fprintf(stderr,"Usage: %s <server address> <provider id>\n", argv[0]);
         exit(0);
     }
+
+    MPI_Init(&argc, &argv);
+    int rank;
+     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     const char* svr_addr_str = argv[1];
     uint16_t    provider_id  = atoi(argv[2]);
@@ -32,7 +37,9 @@ int main(int argc, char** argv)
 
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
-    alpha_do_work(alpha_ph, TRANSFER_SIZE, local_bulk, &result);
+
+    for(int i=0; i < 100; i++)
+      alpha_do_work(alpha_ph, TRANSFER_SIZE, local_bulk, &result);
 
     alpha_provider_handle_release(alpha_ph);
 
@@ -40,11 +47,14 @@ int main(int argc, char** argv)
 
     margo_bulk_free(local_bulk);
 
-    margo_shutdown_remote_instance(mid, svr_addr); 
+    if(!rank)
+      margo_shutdown_remote_instance(mid, svr_addr); 
 
     margo_addr_free(mid, svr_addr);
 
     margo_finalize(mid);
+
+    MPI_Finalize();
 
     return 0;
 }

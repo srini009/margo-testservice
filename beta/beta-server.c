@@ -115,7 +115,7 @@ static void beta_do_work_ult(hg_handle_t h)
     for(int i = 0 ; i < ARRAY_SIZE; i++)
       c[i] = a[i];
 
-    fprintf(stderr, "Beta done with it's job.\n");
+    //fprintf(stderr, "Beta done with it's job.\n");
 
     out.ret = 0;
 

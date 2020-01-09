@@ -109,7 +109,7 @@ static void gamma_do_work_ult(hg_handle_t h)
     for (int i = 0 ; i < COMPUTE_CYCLES; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
-    fprintf(stderr, "Gamma done with it's job.\n");
+    //fprintf(stderr, "Gamma done with it's job.\n");
 
     delta_do_work(delta_ph, in.n, in.bulk, &partial_result);
 

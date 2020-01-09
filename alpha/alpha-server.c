@@ -121,7 +121,7 @@ static void alpha_do_work_ult(hg_handle_t h)
             in.bulk, 0, local_bulk, 0, buf_size);
     assert(ret == HG_SUCCESS);
 
-    fprintf(stderr, "Alpha done with it's job.\n");
+    //fprintf(stderr, "Alpha done with it's job.\n");
 
     beta_do_work(beta_ph, in.n, in.bulk, &partial_result);
     

@@ -105,7 +105,7 @@ static void delta_do_work_ult(hg_handle_t h)
     remove("/dev/shm/junk");
     fclose(fp);
 
-    fprintf(stderr, "Delta is done with its job.\n");
+    //fprintf(stderr, "Delta is done with its job.\n");
 
     out.ret = 0;
 
