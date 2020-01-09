@@ -1,6 +1,7 @@
 #include "delta-server.h"
 #include "types.h"
 #include <assert.h>
+#include "../common.h"
 
 struct delta_provider {
     margo_instance_id mid;
@@ -96,7 +97,7 @@ static void delta_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Do I/O work */
-    for(int i = 0; i < 100000000; i++) {
+    for(int i = 0; i < FILE_SIZE; i++) {
       r.x = i;
       fwrite(&r,sizeof(struct rec),1,fp);
     }

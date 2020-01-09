@@ -2,7 +2,7 @@
 #include "gamma-server.h"
 #include "types.h"
 #include "delta-client.h"
-
+#include "../common.h"
 
 struct gamma_provider {
     margo_instance_id mid;
@@ -106,7 +106,7 @@ static void gamma_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Bogus CPU-bound computation */
-    for (int i = 0 ; i < 1000000000; i++)
+    for (int i = 0 ; i < COMPUTE_CYCLES; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
     fprintf(stderr, "Gamma done with it's job.\n");

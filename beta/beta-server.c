@@ -2,8 +2,7 @@
 #include "beta-server.h"
 #include "types.h"
 #include "gamma-client.h"
-
-#define ARRAY_SIZE 1000000000
+#include "../common.h"
 
 struct beta_provider {
     margo_instance_id mid;

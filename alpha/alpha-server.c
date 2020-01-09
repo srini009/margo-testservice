@@ -2,6 +2,7 @@
 #include "alpha-server.h"
 #include "beta-client.h"
 #include "types.h"
+#include "../common.h"
 
 struct alpha_provider {
     margo_instance_id mid;
