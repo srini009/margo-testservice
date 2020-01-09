@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 
     int32_t result;
 
-    int32_t values[1000];
+    int32_t * values = (int32_t*)calloc(1000, sizeof(int32_t));
     hg_size_t size = 1000*sizeof(int32_t);
 
     hg_bulk_t local_bulk;
@@ -36,6 +36,8 @@ int main(int argc, char** argv)
     alpha_provider_handle_release(alpha_ph);
 
     alpha_client_finalize(alpha_clt);
+
+    margo_bulk_free(local_bulk);
 
     margo_shutdown_remote_instance(mid, svr_addr); 
 

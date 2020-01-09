@@ -1,5 +1,6 @@
 #include "delta-server.h"
 #include "types.h"
+#include <assert.h>
 
 struct delta_provider {
     margo_instance_id mid;
@@ -100,14 +101,20 @@ static void delta_do_work_ult(hg_handle_t h)
       fwrite(&r,sizeof(struct rec),1,fp);
     }
 
-    //remove("/dev/shm/junk");
+    remove("/dev/shm/junk");
     fclose(fp);
+
     fprintf(stderr, "Delta is done with its job.\n");
 
     out.ret = 0;
 
     ret = margo_respond(h, &out);
+    assert(ret == HG_SUCCESS);
 
     ret = margo_free_input(h, &in);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_destroy(h);
+    assert(ret == HG_SUCCESS);
 }
 DEFINE_MARGO_RPC_HANDLER(delta_do_work_ult)

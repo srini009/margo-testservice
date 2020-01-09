@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "alpha-server.h"
 #include "beta-client.h"
 #include "types.h"
@@ -95,6 +96,8 @@ static void alpha_do_work_ult(hg_handle_t h)
     alpha_in_t     in;
     alpha_out_t   out;
     int32_t partial_result;
+    int32_t* values;
+    hg_bulk_t local_bulk;
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
@@ -105,16 +108,35 @@ static void alpha_do_work_ult(hg_handle_t h)
 
     out.ret = 0;
 
-    /* Bogus CPU-bound computation */
-    for (int i = 0 ; i < 1000000000; i++)
-      out.ret = out.ret + (45 + 69)*2 + i;
+    /* Pull in data from alpha-client through RDMA, simulating a network op */
+    values = calloc(in.n, sizeof(*values));
+    hg_size_t buf_size = in.n * sizeof(*values);
+
+    ret = margo_bulk_create(mid, 1, (void**)&values, &buf_size,
+            HG_BULK_WRITE_ONLY, &local_bulk);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_bulk_transfer(mid, HG_BULK_PULL, info->addr,
+            in.bulk, 0, local_bulk, 0, buf_size);
+    assert(ret == HG_SUCCESS);
 
     fprintf(stderr, "Alpha done with it's job.\n");
 
     beta_do_work(beta_ph, in.n, in.bulk, &partial_result);
+    
 
     ret = margo_respond(h, &out);
+    assert(ret == HG_SUCCESS);
+    
 
+    ret = margo_bulk_free(local_bulk);
+    free(values);
+ 
     ret = margo_free_input(h, &in);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_destroy(h);
+    assert(ret == HG_SUCCESS);
+
 }
 DEFINE_MARGO_RPC_HANDLER(alpha_do_work_ult)

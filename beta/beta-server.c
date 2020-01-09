@@ -123,7 +123,12 @@ static void beta_do_work_ult(hg_handle_t h)
     gamma_do_work(gamma_ph, in.n, in.bulk, &partial_result);
 
     ret = margo_respond(h, &out);
+    assert(ret == HG_SUCCESS);
 
     ret = margo_free_input(h, &in);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_destroy(h);
+    assert(ret == HG_SUCCESS);
 }
 DEFINE_MARGO_RPC_HANDLER(beta_do_work_ult)

@@ -96,8 +96,6 @@ static void gamma_do_work_ult(hg_handle_t h)
     gamma_out_t   out;
 
     int32_t partial_result;
-    int32_t* values;
-    hg_bulk_t local_bulk;
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
@@ -107,31 +105,21 @@ static void gamma_do_work_ult(hg_handle_t h)
 
     ret = margo_get_input(h, &in);
 
-    /* Pull in data from alpha-client through RDMA, simulating a network op */
-     values = calloc(in.n, sizeof(*values));
-    hg_size_t buf_size = in.n * sizeof(*values);
-
-    ret = margo_bulk_create(mid, 1, (void**)&values, &buf_size,
-            HG_BULK_WRITE_ONLY, &local_bulk);
-    assert(ret == HG_SUCCESS);
-
-    ret = margo_bulk_transfer(mid, HG_BULK_PULL, info->addr,
-            in.bulk, 0, local_bulk, 0, buf_size);
-    assert(ret == HG_SUCCESS);
+    /* Bogus CPU-bound computation */
+    for (int i = 0 ; i < 1000000000; i++)
+      out.ret = out.ret + (45 + 69)*2 + i;
 
     fprintf(stderr, "Gamma done with it's job.\n");
-
-    ret = margo_bulk_free(local_bulk);
-    assert(ret);
-
-    free(values);
-
-    out.ret = 0;
 
     delta_do_work(delta_ph, in.n, in.bulk, &partial_result);
 
     ret = margo_respond(h, &out);
+    assert(ret == HG_SUCCESS);
 
     ret = margo_free_input(h, &in);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_destroy(h);
+    assert(ret == HG_SUCCESS);
 }
 DEFINE_MARGO_RPC_HANDLER(gamma_do_work_ult)
