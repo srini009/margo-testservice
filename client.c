@@ -23,9 +23,14 @@ int main(int argc, char** argv)
     margo_instance_id mid = margo_init("ofi+verbs", MARGO_CLIENT_MODE, 0, 0);
 
     srand(rank);
-    int server = rand() % atoi(argv[1]);
+    int server_color = rand() % atoi(argv[1]);
 
-    sprintf(filename, "server_addr_%d.txt", server);
+    sprintf(filename, "server_addr_%d.txt", server_color);
+
+    MPI_Comm new_comm;
+    MPI_Comm_split(MPI_COMM_WORLD, server_color, rank, &new_comm);
+    int local_rank;
+    MPI_Comm_rank(new_comm, &local_rank);
 
     FILE * fp;
     fp = fopen(filename, "r");
@@ -61,7 +66,9 @@ int main(int argc, char** argv)
 
     margo_bulk_free(local_bulk);
 
-    if(!rank)
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if(!local_rank)
       margo_shutdown_remote_instance(mid, svr_addr); 
 
     margo_addr_free(mid, svr_addr);

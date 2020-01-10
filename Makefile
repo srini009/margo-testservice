@@ -24,4 +24,4 @@ all: alpha/alpha-server.c alpha/alpha-client.c beta/beta-server.c beta/beta-clie
 	$(CC) -o client client.o -L. -lalpha-client -lmargo
 
 clean:
-	rm *.o *.csv *.trace client server core* *.so server_addr*
+	rm *.o *.csv *.trace client server core* *.so server_addr* *.pdf
