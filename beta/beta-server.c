@@ -2,6 +2,8 @@
 #include "beta-server.h"
 #include "types.h"
 #include "gamma-client.h"
+#include "alpha-client.h"
+#include "delta-client.h"
 #include "../common.h"
 
 struct beta_provider {
@@ -12,6 +14,10 @@ struct beta_provider {
 
 gamma_client_t gamma_clt;
 gamma_provider_handle_t gamma_ph;
+alpha_client_t alpha_clt;
+alpha_provider_handle_t alpha_ph;
+delta_client_t delta_clt;
+delta_provider_handle_t delta_ph;
 
 static void beta_finalize_provider(void* p);
 
@@ -68,6 +74,10 @@ void beta_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t
 {
     gamma_client_init(mid, &gamma_clt);
     gamma_provider_handle_create(gamma_clt, svr_addr, p, &gamma_ph);
+    alpha_client_init(mid, &alpha_clt);
+    alpha_provider_handle_create(alpha_clt, svr_addr, p, &alpha_ph);
+    delta_client_init(mid, &delta_clt);
+    delta_provider_handle_create(delta_clt, svr_addr, p, &delta_ph);
 }
 
 static void beta_finalize_provider(void* p)
@@ -86,9 +96,13 @@ int beta_provider_destroy(
     /* call the callback */
     beta_finalize_provider(provider);
 
+    alpha_provider_handle_release(alpha_ph);
+    alpha_client_finalize(alpha_clt);
     gamma_provider_handle_release(gamma_ph);
-
     gamma_client_finalize(gamma_clt);
+    delta_provider_handle_release(delta_ph);
+    delta_client_finalize(delta_clt);
+
     free(a);
     free(c);
 

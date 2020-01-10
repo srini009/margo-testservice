@@ -1,6 +1,8 @@
 #include <assert.h>
 #include "alpha-server.h"
 #include "beta-client.h"
+#include "gamma-client.h"
+#include "delta-client.h"
 #include "types.h"
 #include "../common.h"
 
@@ -17,6 +19,10 @@ static void alpha_do_work_ult(hg_handle_t h);
 
 beta_client_t beta_clt;
 beta_provider_handle_t beta_ph;
+gamma_client_t gamma_clt;
+gamma_provider_handle_t gamma_ph;
+delta_client_t delta_clt;
+delta_provider_handle_t delta_ph;
 
 /* add other RPC declarations here */
 
@@ -64,6 +70,10 @@ void alpha_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_
 {
     beta_client_init(mid, &beta_clt);
     beta_provider_handle_create(beta_clt, svr_addr, p, &beta_ph);
+    gamma_client_init(mid, &gamma_clt);
+    gamma_provider_handle_create(gamma_clt, svr_addr, p, &gamma_ph);
+    delta_client_init(mid, &delta_clt);
+    delta_provider_handle_create(delta_clt, svr_addr, p, &delta_ph);
 }
 
 static void alpha_finalize_provider(void* p)
@@ -83,8 +93,11 @@ int alpha_provider_destroy(
     alpha_finalize_provider(provider);
 
     beta_provider_handle_release(beta_ph);
-
     beta_client_finalize(beta_clt);
+    gamma_provider_handle_release(gamma_ph);
+    gamma_client_finalize(gamma_clt);
+    delta_provider_handle_release(delta_ph);
+    delta_client_finalize(delta_clt);
  
 
     return ALPHA_SUCCESS;

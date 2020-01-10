@@ -43,6 +43,7 @@ int main(int argc, char** argv)
     alpha_create_downstream_handles(mid, 42, my_address);
     beta_create_downstream_handles(mid, 42, my_address);
     gamma_create_downstream_handles(mid, 42, my_address);
+    delta_create_downstream_handles(mid, 42, my_address);
 
     margo_addr_free(mid,my_address);
 

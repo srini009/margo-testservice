@@ -20,7 +20,7 @@ all: alpha/alpha-server.c alpha/alpha-client.c beta/beta-server.c beta/beta-clie
 	$(CC) -shared -o libdelta-server.so delta-server.o
 	$(CC) -c $(CFLAGS) server.c -o server.o
 	$(CC) -c $(CFLAGS) client.c -o client.o
-	$(CC) -o server server.o -L. -lalpha-server -lbeta-client -lbeta-server -lgamma-client -lgamma-server -ldelta-client -ldelta-server -lmargo 
+	$(CC) -o server server.o -L. -lalpha-client -lalpha-server -lbeta-client -lbeta-server -lgamma-client -lgamma-server -ldelta-client -ldelta-server -lmargo 
 	$(CC) -o client client.o -L. -lalpha-client -lmargo
 
 clean:
