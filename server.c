@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     char filename[100];
-    sprintf(filename, "server_%d", rank);
+    sprintf(filename, "server_addr_%d.txt", rank);
     FILE *fp = fopen(filename, "w");
 
     margo_instance_id mid = margo_init("ofi+verbs", MARGO_SERVER_MODE, 0, 0);
@@ -29,8 +29,11 @@ int main(int argc, char** argv)
     margo_addr_to_string(mid, addr_str, &addr_str_size, my_address);
     temp = addr_str + 17;
     sprintf(actual_addr, "ofi+verbs%s",temp);
-    fprintf(fp, "%s", actual_addr);
+    fprintf(fp, "%s\n", actual_addr);
     fflush(fp);
+    fclose(fp);
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     alpha_provider_register(mid, 42, ALPHA_ABT_POOL_DEFAULT, ALPHA_PROVIDER_IGNORE);
     beta_provider_register(mid, 42, BETA_ABT_POOL_DEFAULT, BETA_PROVIDER_IGNORE);
@@ -46,8 +49,6 @@ int main(int argc, char** argv)
     margo_enable_remote_shutdown(mid);
 
     margo_wait_for_finalize(mid);
-
-    fclose(fp);
 
     MPI_Finalize();
 
