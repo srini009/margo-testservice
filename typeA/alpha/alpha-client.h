@@ -76,14 +76,20 @@ int alpha_provider_handle_release(alpha_provider_handle_t handle);
  *    *
  *     * @param[in] handle provide handle.
  *      * @param[in] x first number.
- *       * @param[out] result resulting value.
- *        *
- *         * @return ALPHA_SUCCESS or error code defined in alpha-common.h
- *          */
+         * @param[in] compute compute_cycles
+          * @param[in] memory memory copy
+           * @param[in] file_size file size
+ *          * @param[out] result resulting value.
+ *           *
+ *            * @return ALPHA_SUCCESS or error code defined in alpha-common.h
+ *             */
 int alpha_do_work(
         alpha_provider_handle_t handle,
         int32_t x,
         hg_bulk_t local_bulk,
+        int32_t compute,
+        int32_t memory,
+        int32_t file_size,
         int32_t* result);
 
 #endif

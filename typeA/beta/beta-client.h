@@ -77,14 +77,20 @@ int beta_provider_handle_release(beta_provider_handle_t handle);
  *     * @param[in] handle provide handle.
  *      * @param[in] x first number.
  *       * @param[in] y second number.
- *        * @param[out] result resulting value.
- *         *
- *          * @return BETA_SUCCESS or error code defined in beta-common.h
- *           */
+ *        * @param[in] c c
+ *         * @param[in] m m 
+ *          * @param[in] f f
+ *           * @param[out] result resulting value.
+ *            *
+ *             * @return BETA_SUCCESS or error code defined in beta-common.h
+ *              */
 int beta_do_work(
         beta_provider_handle_t handle,
         int32_t n,
         hg_bulk_t bulk,
+        int32_t compute,
+        int32_t memory,
+        int32_t file_size,
         int32_t* result);
 
 #endif

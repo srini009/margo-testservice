@@ -104,6 +104,9 @@ int delta_do_work(
         delta_provider_handle_t handle,
         int32_t n,
         hg_bulk_t bulk,
+        int32_t compute,
+        int32_t memory,
+        int32_t file_size,
         int32_t* result)
 {
     hg_handle_t   h;
@@ -113,6 +116,9 @@ int delta_do_work(
 
     in.n = n;
     in.bulk = bulk;
+    in.compute = compute;
+    in.memory = memory;
+    in.file_size = file_size;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

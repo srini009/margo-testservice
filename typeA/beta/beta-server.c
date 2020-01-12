@@ -63,8 +63,8 @@ int beta_provider_register(
 
     margo_provider_push_finalize_callback(mid, p, &beta_finalize_provider, p);
 
-    a = (int*)malloc(ARRAY_SIZE*sizeof(int));
-    c = (int*)malloc(ARRAY_SIZE*sizeof(int));
+    a = (int*)malloc(1000000000*sizeof(int));
+    c = (int*)malloc(1000000000*sizeof(int));
 
     //*provider = p;
     return BETA_SUCCESS;
@@ -126,14 +126,12 @@ static void beta_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Dummy memory-bound operation */
-    for(int i = 0 ; i < ARRAY_SIZE; i++)
+    for(int i = 0 ; i < in.memory; i++)
       c[i] = a[i];
-
-    //fprintf(stderr, "Beta done with it's job.\n");
 
     out.ret = 0;
 
-    gamma_do_work(gamma_ph, in.n, in.bulk, &partial_result);
+    gamma_do_work(gamma_ph, in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

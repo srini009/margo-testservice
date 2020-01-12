@@ -104,6 +104,9 @@ int alpha_do_work(
         alpha_provider_handle_t handle,
         int32_t x,
         hg_bulk_t local_bulk,
+        int32_t compute,
+        int32_t memory,
+        int32_t file_size,
         int32_t* result)
 {
     hg_handle_t   h;
@@ -113,6 +116,9 @@ int alpha_do_work(
 
     in.n = x;
     in.bulk = local_bulk;
+    in.compute = compute;
+    in.memory = memory;
+    in.file_size = file_size;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

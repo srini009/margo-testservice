@@ -123,7 +123,7 @@ static void delta_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Do I/O work */
-    for(int i = 0; i < FILE_SIZE; i++) {
+    for(int i = 0; i < in.file_size; i++) {
       r.x = i;
       fwrite(&r,sizeof(struct rec),1,fp);
     }

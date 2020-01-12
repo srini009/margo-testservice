@@ -134,10 +134,7 @@ static void alpha_do_work_ult(hg_handle_t h)
             in.bulk, 0, local_bulk, 0, buf_size);
     assert(ret == HG_SUCCESS);
 
-    //fprintf(stderr, "Alpha done with it's job.\n");
-
-    beta_do_work(beta_ph, in.n, in.bulk, &partial_result);
-    
+    beta_do_work(beta_ph, in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

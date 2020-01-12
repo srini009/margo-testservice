@@ -6,7 +6,10 @@
 
 MERCURY_GEN_PROC(beta_in_t,
         ((int32_t)(n))\
-        ((hg_bulk_t)(bulk)))
+        ((hg_bulk_t)(bulk))\
+        ((int32_t)(compute))\
+        ((int32_t)(memory))\
+        ((int32_t)(file_size)))
 
 MERCURY_GEN_PROC(beta_out_t, ((int32_t)(ret)))
 

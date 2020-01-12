@@ -119,12 +119,10 @@ static void gamma_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Bogus CPU-bound computation */
-    for (int i = 0 ; i < COMPUTE_CYCLES; i++)
+    for (int i = 0 ; i < in.compute; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
-    //fprintf(stderr, "Gamma done with it's job.\n");
-
-    delta_do_work(delta_ph, in.n, in.bulk, &partial_result);
+    delta_do_work(delta_ph, in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

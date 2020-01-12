@@ -4,6 +4,21 @@
 #include "alpha-client.h"
 #include "common.h"
 #include <mpi.h>
+#include <unistd.h>
+
+
+void generate_request_characteristics(int32_t * transfer_size, int32_t * compute, int32_t * memory, int32_t * file_size, int32_t * num_requests, int32_t * sleeptime)
+{
+    /* These can be dynamically modified! */
+    *transfer_size = TRANSFER_SIZE;
+    *compute = COMPUTE_CYCLES;
+    *memory = ARRAY_SIZE;
+    *file_size = FILE_SIZE;
+    *num_requests = NUM_REQUESTS;
+    *sleeptime = INVERSE_REQUEST_RATE;
+   
+}
+
 
 int main(int argc, char** argv)
 {
@@ -50,15 +65,21 @@ int main(int argc, char** argv)
     alpha_provider_handle_create(alpha_clt, svr_addr, provider_id, &alpha_ph);
 
     int32_t result;
+    int32_t transfer_size, compute, memory, file_size, num_requests, sleeptime;
 
-    int32_t * values = (int32_t*)calloc(TRANSFER_SIZE, sizeof(int32_t));
-    hg_size_t size = TRANSFER_SIZE*sizeof(int32_t);
+
+    generate_request_characteristics(&transfer_size, &compute, &memory, &file_size, &num_requests, &sleeptime);
+
+    int32_t * values = (int32_t*)calloc(transfer_size, sizeof(int32_t));
+    hg_size_t size = transfer_size*sizeof(int32_t);
 
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
 
-    for(int i=0; i < 100; i++)
-      alpha_do_work(alpha_ph, TRANSFER_SIZE, local_bulk, &result);
+    for(int i=0; i < num_requests; i++) {
+      alpha_do_work(alpha_ph, transfer_size, local_bulk, compute, memory, file_size, &result);
+      usleep(sleeptime);
+    }
 
     alpha_provider_handle_release(alpha_ph);
 
