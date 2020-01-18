@@ -16,7 +16,6 @@ void generate_request_characteristics(int32_t * transfer_size, int32_t * compute
     *file_size = FILE_SIZE;
     *num_requests = NUM_REQUESTS;
     *sleeptime = INVERSE_REQUEST_RATE;
-   
 }
 
 
@@ -72,13 +71,15 @@ int main(int argc, char** argv)
 
     int32_t * values = (int32_t*)calloc(transfer_size, sizeof(int32_t));
     hg_size_t size = transfer_size*sizeof(int32_t);
+    int32_t true_sleeptime;
 
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
 
     for(int i=0; i < num_requests; i++) {
       alpha_do_work(alpha_ph, transfer_size, local_bulk, compute, memory, file_size, &result);
-      usleep(sleeptime);
+      true_sleeptime = (sleeptime - num_requests*10*i);;
+      usleep(true_sleeptime);
     }
 
     alpha_provider_handle_release(alpha_ph);
