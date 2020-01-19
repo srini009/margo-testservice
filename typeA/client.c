@@ -27,8 +27,9 @@ int main(int argc, char** argv)
     }
 
     MPI_Init(&argc, &argv);
-    int rank;
+    int rank, comm_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
     char svr_addr_str[128];
     uint16_t provider_id = 42;
@@ -76,10 +77,25 @@ int main(int argc, char** argv)
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
 
+    /* Simulate increasing workload */ 
+    if(rank < 0.3*(float)comm_size) {
+      for(int i=0; i < num_requests; i++) {
+        alpha_do_work(alpha_ph, transfer_size, local_bulk, compute*10, memory*10, file_size*10, &result);
+      }
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if(rank < 0.6*(float)comm_size) {
+      for(int i=0; i < num_requests; i++) {
+        alpha_do_work(alpha_ph, transfer_size, local_bulk, compute*10, memory*10, file_size*10, &result);
+      }
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
     for(int i=0; i < num_requests; i++) {
-      alpha_do_work(alpha_ph, transfer_size, local_bulk, compute, memory, file_size, &result);
-      true_sleeptime = (sleeptime - num_requests*10*i);;
-      usleep(true_sleeptime);
+      alpha_do_work(alpha_ph, transfer_size, local_bulk, compute*10, memory*10, file_size*10, &result);
     }
 
     alpha_provider_handle_release(alpha_ph);

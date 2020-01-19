@@ -2,7 +2,7 @@
 
 source /home/sramesh/MOCHI/sourceme.sh
 
-ppn=25
+ppn=15
 
 MANUAL=0
 
