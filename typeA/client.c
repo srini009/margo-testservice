@@ -77,6 +77,10 @@ int main(int argc, char** argv)
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
 
+    /* Old logic for increasing workload */
+    /* true_sleeptime = (sleeptime - num_requests*10*i);;
+    usleep(true_sleeptime); */
+
     /* Simulate increasing workload */ 
     if(rank < 0.3*(float)comm_size) {
       for(int i=0; i < num_requests; i++) {
