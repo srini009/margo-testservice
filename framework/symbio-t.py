@@ -65,15 +65,24 @@ class Service:
 		self.microservices = list()
 		self.opTypes = set()
 	
-	def addMicroservice(microservice):
+	def addMicroservice(self, microservice):
 		self.microservices.append(microservice)
 
-	def addOperationType(op):
-		self.opTypes.append(op)
+	def addOperationType(self, op):
+		self.opTypes.add(op)
 
 
-a = OperationTree(NetworkMicroservice.functions[0], None, None, None)
-b = OperationTree(ComputeMicroservice.functions[0], (a, AccessPattern.Fixed), (a, AccessPattern.Dynamic), None)
-c = OperationTree(StorageMicroservice.functions[0], (b, AccessPattern.Dynamic), None, None)
+def main():
+	a = OperationTree(NetworkMicroservice.functions[0], None, None, None)
+	b = OperationTree(ComputeMicroservice.functions[0], (a, AccessPattern.Fixed), (a, AccessPattern.Dynamic), None)
+	c = OperationTree(StorageMicroservice.functions[0], (b, AccessPattern.Dynamic), None, None)
 
-c.traverseTree()
+	op1 = OperationType("op1", c)
+	s = Service()
+	s.addMicroservice(NetworkMicroservice(2))
+	s.addMicroservice(ComputeMicroservice(1))
+	s.addMicroservice(StorageMicroservice(1))
+	s.addOperationType(op1)
+
+main()
+
