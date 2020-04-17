@@ -97,9 +97,8 @@ class Service:
 		filename = self.name + str("_client.h")
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
-		#Note to self: Use enums to represent service ops and implement a getter function that takes an enum op and
-		#returns the corresponding JSON string structure for that op
 		op_enum_string = "enum " + self.name + "_optype {\n"
+
 		for index, op in enumerate(self.opTypes):
 			if index < (len(self.opTypes) - 1):
 				op_enum_string += "\t" + op.name + ",\n"
@@ -129,26 +128,22 @@ class Service:
 		service_struct = "typedef struct {\n" + service_core_struct + "} " + self.name +"_service;\n\n"
 
 		service_provider_num_constants = ""
-		microservice_types = {Microservice.Network, Microservice.Compute, Microservice.Memory, Microservice.Storage}
 		
 		for microservice in self.microservices:
 			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice.microservice_type.value + " = " + str(microservice.num_providers) + ";\n"
-			microservice_types.remove(microservice.microservice_type)
 
-		for microservice_type in microservice_types:
-			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice_type.value + " = 0;\n"
-	
 		service_provider_num_constants += "\n\n"
 	
-		service_init_function = "void initialize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service d) {\n"
-		microservice_types = {Microservice.Network, Microservice.Compute, Microservice.Memory, Microservice.Storage}
-		for microservice_type in microservice_types:
-			service_init_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice_type.value + "; i++) {\n"
-			service_init_function += "    d." + microservice_type.value + "[i] = GENERATE_UNIQUE_PROVIDER_ID();\n"
-			service_init_function += "    " + microservice_type.value + "_provider_register(mid, d." + microservice_type.value + "[i], " + \
-							microservice_type.value.upper() + "_ABT_POOL_DEFAULT, " + microservice_type.value.upper() + "_PROVIDER_IGNORE);\n"
+		service_init_function = "void initialize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service* d) {\n"
+	
+		for microservice in self.microservices:
+			service_init_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
+			service_init_function += "    d->" + microservice.microservice_type.value + "[i] = GENERATE_UNIQUE_PROVIDER_ID();\n"
+			service_init_function += "    " + microservice.microservice_type.value + "_provider_register(mid, d->" + microservice.microservice_type.value + "[i], " + \
+							microservice.microservice_type.value.upper() + "_ABT_POOL_DEFAULT, " + microservice.microservice_type.value.upper() + "_PROVIDER_IGNORE);\n"
 			service_init_function += "  }\n\n"
-		service_init_function += "}\n\n\n"
+
+		service_init_function += "}"
 		f.write(service_struct)
 		f.write(service_provider_num_constants)
 		f.write(service_init_function)
