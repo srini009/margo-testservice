@@ -93,18 +93,32 @@ class Service:
 	def addOperationType(self, op):
 		self.opTypes.add(op)
 
-	def generateClientHeader(self):
+	def __generateClientHeader(self):
 		filename = self.name + str("_client.h")
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
 		#Note to self: Use enums to represent service ops and implement a getter function that takes an enum op and
 		#returns the corresponding JSON string structure for that op
+		op_enum_string = "enum " + self.name + "_optype {\n"
+		for index, op in enumerate(self.opTypes):
+			if index < (len(self.opTypes) - 1):
+				op_enum_string += "\t" + op.name + ",\n"
+			else:
+				op_enum_string += "\t" + op.name + "\n"
+		op_enum_string += "};\n\ntypedef enum " + self.name + "_optype " + self.name + "_optype;\n\n"
+
+		f.write(op_enum_string)
+		
+		op_structure_getter_func = "const char* get_" + self.name + "_service_request_structure(" + self.name + "_optype op) {\n"
+		op_structure_getter_func += "\tswitch(op) {\n"
 		for op in self.opTypes:
-			f.write("static char[] " + op.name + " = \"" + str(op.opTree.traverseTree()) + "\";")
+			op_structure_getter_func += "\t case " + op.name + ":\n" + "\t  return \"" + str(op.opTree.traverseTree()) + "\";\n"
+		op_structure_getter_func += "\t}\n}"
+		f.write(op_structure_getter_func)
 		f.flush()
 		f.close()
 
-	def generateServiceHeader(self):
+	def __generateServiceHeader(self):
 		filename = self.name + str("_server.h")
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
@@ -113,12 +127,37 @@ class Service:
 		for microservice in self.microservices:
 			service_core_struct += "\tint " + microservice.microservice_type.value + "[" + str(microservice.num_providers) + "];\n"
 		service_struct = "typedef struct {\n" + service_core_struct + "} " + self.name +"_service;\n\n"
+
+		service_provider_num_constants = ""
+		microservice_types = {Microservice.Network, Microservice.Compute, Microservice.Memory, Microservice.Storage}
 		
-		service_init_function = "void initialize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service d) {}"
+		for microservice in self.microservices:
+			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice.microservice_type.value + " = " + str(microservice.num_providers) + ";\n"
+			microservice_types.remove(microservice.microservice_type)
+
+		for microservice_type in microservice_types:
+			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice_type.value + " = 0;\n"
+	
+		service_provider_num_constants += "\n\n"
+	
+		service_init_function = "void initialize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service d) {\n"
+		microservice_types = {Microservice.Network, Microservice.Compute, Microservice.Memory, Microservice.Storage}
+		for microservice_type in microservice_types:
+			service_init_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice_type.value + "; i++) {\n"
+			service_init_function += "    d." + microservice_type.value + "[i] = GENERATE_UNIQUE_PROVIDER_ID();\n"
+			service_init_function += "    " + microservice_type.value + "_provider_register(mid, d." + microservice_type.value + "[i], " + \
+							microservice_type.value.upper() + "_ABT_POOL_DEFAULT, " + microservice_type.value.upper() + "_PROVIDER_IGNORE);\n"
+			service_init_function += "  }\n\n"
+		service_init_function += "}\n\n\n"
 		f.write(service_struct)
+		f.write(service_provider_num_constants)
 		f.write(service_init_function)
 		f.flush()
 		f.close()
+
+	def generateHeaders(self):
+		self.__generateClientHeader()
+		self.__generateServiceHeader()
 	
 def main():
 	a = OperationTree(NetworkMicroservice.functions[0])
@@ -126,13 +165,14 @@ def main():
 	c = OperationTree(StorageMicroservice.functions[0], (b, AccessPattern.Dynamic))
 
 	op1 = OperationType("op1", c)
+	op2 = OperationType("op2", b)
 	s = Service("dummy")
 	s.addMicroservice(NetworkMicroservice(2))
 	s.addMicroservice(ComputeMicroservice(1))
 	s.addMicroservice(StorageMicroservice(1))
 	s.addOperationType(op1)
-	s.generateClientHeader()
-	s.generateServiceHeader()
+	s.addOperationType(op2)
+	s.generateHeaders()
 
 main()
 
