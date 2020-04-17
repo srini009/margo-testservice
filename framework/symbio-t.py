@@ -135,12 +135,14 @@ class Service:
 		service_provider_num_constants += "\n\n"
 	
 		service_init_function = "void initialize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service* d) {\n"
+		service_init_function += "  hg_addr_t my_address;\n  margo_addr_self(mid, &my_address);\n\n"
 	
 		for microservice in self.microservices:
 			service_init_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
 			service_init_function += "    d->" + microservice.microservice_type.value + "[i] = GENERATE_UNIQUE_PROVIDER_ID();\n"
 			service_init_function += "    " + microservice.microservice_type.value + "_provider_register(mid, d->" + microservice.microservice_type.value + "[i], " + \
 							microservice.microservice_type.value.upper() + "_ABT_POOL_DEFAULT, " + microservice.microservice_type.value.upper() + "_PROVIDER_IGNORE);\n"
+			service_init_function += "    " + microservice.microservice_type.value + "_create_downstream_handles(mid, d->" + microservice.microservice_type.value + "[i], my_address);\n"
 			service_init_function += "  }\n\n"
 
 		service_init_function += "}"
