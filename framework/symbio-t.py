@@ -145,10 +145,19 @@ class Service:
 			service_init_function += "    " + microservice.microservice_type.value + "_create_downstream_handles(mid, d->" + microservice.microservice_type.value + "[i], my_address);\n"
 			service_init_function += "  }\n\n"
 
-		service_init_function += "}"
+		service_init_function += "}\n\n"
+	
+		service_finalize_function = "void finalize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service* d) {\n"
+		service_finalize_function += "  hg_addr_t my_address;\n  margo_addr_self(mid, &my_address);\n\n"
+		for microservice in self.microservices:
+			service_finalize_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
+			service_finalize_function += "    " + microservice.microservice_type.value + "_destroy_downstream_handles(mid, d->" + microservice.microservice_type.value + "[i], my_address);\n"
+			service_finalize_function += "  }\n\n"
+		service_finalize_function += "}\n"	
 		f.write(service_struct)
 		f.write(service_provider_num_constants)
 		f.write(service_init_function)
+		f.write(service_finalize_function)
 		f.flush()
 		f.close()
 
