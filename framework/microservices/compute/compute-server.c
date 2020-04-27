@@ -17,12 +17,14 @@ static void compute_finalize_provider(void* p);
 DECLARE_MARGO_RPC_HANDLER(compute_do_work_ult);
 static void compute_do_work_ult(hg_handle_t h);
 /* add other RPC declarations here */
-memory_client_t memory_clt;
-memory_provider_handle_t memory_ph;
-network_client_t network_clt;
-network_provider_handle_t network_ph;
-storage_client_t storage_clt;
-storage_provider_handle_t storage_ph;
+
+/* Local client and provider handles */
+memory_client_t memory_local_clt;
+memory_provider_handle_t *memory_local_ph;
+network_client_t network_local_clt;
+network_provider_handle_t *network_local_ph;
+storage_client_t storage_local_clt;
+storage_provider_handle_t *storage_local_ph;
 
 int compute_provider_register(
         margo_instance_id mid,
@@ -65,14 +67,15 @@ int compute_provider_register(
     return COMPUTE_SUCCESS;
 }
 
-void compute_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t svr_addr)
+void compute_create_downstream_handles(margo_instance_id mid, hg_addr_t svr_addr)
 {
-    storage_client_init(mid, &storage_clt);
-    storage_provider_handle_create(storage_clt, svr_addr, p, &storage_ph);
-    memory_client_init(mid, &memory_clt);
-    memory_provider_handle_create(memory_clt, svr_addr, p, &memory_ph);
-    network_client_init(mid, &network_clt);
-    network_provider_handle_create(network_clt, svr_addr, p, &network_ph);
+    /* Create local clients and provider handles */
+    storage_client_init(mid, &storage_local_clt);
+    storage_provider_handle_create(storage_local_clt, svr_addr, p, &storage_ph);
+    memory_client_init(mid, &memory_local_clt);
+    memory_provider_handle_create(memory_local_clt, svr_addr, p, &memory_ph);
+    network_client_init(mid, &network_local_clt);
+    network_provider_handle_create(network_local(clt, svr_addr, p, &network_ph);
 }
 
 static void compute_finalize_provider(void* p)

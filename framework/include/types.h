@@ -12,4 +12,8 @@ MERCURY_GEN_PROC(symbio_in_t,
 
 MERCURY_GEN_PROC(symbio_out_t, ((int32_t)(ret)))
 
+enum AccessPattern {Fixed = 0, Dynamic = 1};
+
+enum Microservices {Network = 0, Memory = 1, Compute = 2, Storage = 3};
+
 #endif

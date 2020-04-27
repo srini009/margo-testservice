@@ -131,31 +131,42 @@ class Service:
 		
 		for microservice in self.microservices:
 			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice.microservice_type.value + " = " + str(microservice.num_providers) + ";\n"
+		service_clients_and_providers = ""
+		for microservice in self.microservices:
+			service_clients_and_providers += "static " + microservice.microservice_type.value + "_client_t " + microservice.microservice_type.value + "_clt;\n"
+			service_clients_and_providers += "static " + microservice.microservice_type.value + "_provider_handle_t " + microservice.microservice_type.value + "_local_ph[" +str(microservice.num_providers) + "];\n"
 
+		service_clients_and_providers += "\n\n"
+		
 		service_provider_num_constants += "\n\n"
 	
 		service_init_function = "void initialize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service* d) {\n"
 		service_init_function += "  hg_addr_t my_address;\n  margo_addr_self(mid, &my_address);\n\n"
 	
 		for microservice in self.microservices:
+			service_init_function += "  " + microservice.microservice_type.value + "_client_init(mid, &" + microservice.microservice_type.value + "_clt);\n"
 			service_init_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
 			service_init_function += "    d->" + microservice.microservice_type.value + "[i] = GENERATE_UNIQUE_PROVIDER_ID();\n"
 			service_init_function += "    " + microservice.microservice_type.value + "_provider_register(mid, d->" + microservice.microservice_type.value + "[i], " + \
 							microservice.microservice_type.value.upper() + "_ABT_POOL_DEFAULT, " + microservice.microservice_type.value.upper() + "_PROVIDER_IGNORE);\n"
-			service_init_function += "    " + microservice.microservice_type.value + "_create_downstream_handles(mid, d->" + microservice.microservice_type.value + "[i], my_address);\n"
+			service_init_function += "    " + microservice.microservice_type.value + "_provider_handle_create(" + microservice.microservice_type.value + ", my_address, d->" + microservice.microservice_type.value + "[i], &" + microservice.microservice_type.value + "_local_ph[i]);\n"
 			service_init_function += "  }\n\n"
 
 		service_init_function += "}\n\n"
 	
 		service_finalize_function = "void finalize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service* d) {\n"
 		service_finalize_function += "  hg_addr_t my_address;\n  margo_addr_self(mid, &my_address);\n\n"
+
 		for microservice in self.microservices:
 			service_finalize_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
-			service_finalize_function += "    " + microservice.microservice_type.value + "_destroy_downstream_handles(mid, d->" + microservice.microservice_type.value + "[i], my_address);\n"
-			service_finalize_function += "  }\n\n"
+			service_finalize_function += "    " + microservice.microservice_type.value + "_provider_handle_release(" + microservice.microservice_type.value +"_local_ph[i]);\n"
+			service_finalize_function += "  }\n"
+			service_finalize_function += "  " + microservice.microservice_type.value + "_client_finalize(" + microservice.microservice_type.value + "_clt);\n\n"
+			
 		service_finalize_function += "}\n"	
 		f.write(service_struct)
 		f.write(service_provider_num_constants)
+		f.write(service_clients_and_providers)
 		f.write(service_init_function)
 		f.write(service_finalize_function)
 		f.flush()
@@ -164,6 +175,7 @@ class Service:
 	def generateHeaders(self):
 		self.__generateClientHeader()
 		self.__generateServiceHeader()
+
 	
 def main():
 	a = OperationTree(NetworkMicroservice.functions[0])
