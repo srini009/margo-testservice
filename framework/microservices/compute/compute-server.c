@@ -1,10 +1,9 @@
 #include <assert.h>
+#include "../common.h"
 #include "compute-server.h"
-#include "../../include/types.h"
 #include "memory-client.h"
 #include "network-client.h"
 #include "storage-client.h"
-#include "../common.h"
 
 struct compute_provider {
     margo_instance_id mid;
@@ -17,14 +16,6 @@ static void compute_finalize_provider(void* p);
 DECLARE_MARGO_RPC_HANDLER(compute_do_work_ult);
 static void compute_do_work_ult(hg_handle_t h);
 /* add other RPC declarations here */
-
-/* Local client and provider handles */
-memory_client_t memory_local_clt;
-memory_provider_handle_t *memory_local_ph;
-network_client_t network_local_clt;
-network_provider_handle_t *network_local_ph;
-storage_client_t storage_local_clt;
-storage_provider_handle_t *storage_local_ph;
 
 int compute_provider_register(
         margo_instance_id mid,
@@ -67,17 +58,6 @@ int compute_provider_register(
     return COMPUTE_SUCCESS;
 }
 
-void compute_create_downstream_handles(margo_instance_id mid, hg_addr_t svr_addr)
-{
-    /* Create local clients and provider handles */
-    storage_client_init(mid, &storage_local_clt);
-    storage_provider_handle_create(storage_local_clt, svr_addr, p, &storage_ph);
-    memory_client_init(mid, &memory_local_clt);
-    memory_provider_handle_create(memory_local_clt, svr_addr, p, &memory_ph);
-    network_client_init(mid, &network_local_clt);
-    network_provider_handle_create(network_local(clt, svr_addr, p, &network_ph);
-}
-
 static void compute_finalize_provider(void* p)
 {
     compute_provider_t provider = (compute_provider_t)p;
@@ -93,13 +73,6 @@ int compute_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     compute_finalize_provider(provider);
-
-    network_provider_handle_release(network_ph);
-    network_client_finalize(network_clt);
-    memory_provider_handle_release(memory_ph);
-    memory_client_finalize(memory_clt);
-    storage_provider_handle_release(storage_ph);
-    storage_client_finalize(storage_clt);
 
     return COMPUTE_SUCCESS;
 }

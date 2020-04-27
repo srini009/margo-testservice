@@ -2,6 +2,7 @@
 #define __COMPUTE_SERVER_H
 
 #include <margo.h>
+#include "../common.h"
 #include "compute-common.h"
 
 #ifdef __cplusplus
@@ -42,19 +43,6 @@ int compute_provider_register(
 int compute_provider_destroy(
         compute_provider_t provider);
 
-/**
- *  * @brief Creates handles and connections to downstream microservice dependencies
- *   *
- *    * @param[in] mid Margo instance
- *     *  @param[in] p provider id
- *      *  @param[in] svr_addr server address
- *       *
- *        * @return COMPUTE_SUCCESS or error code defined in network-common.h
- *         */
-void compute_create_downstream_handles(
-	margo_instance_id mid, 
-	uint16_t p, 
-	hg_addr_t svr_addr);
 #ifdef __cplusplus
 }
 #endif

@@ -2,6 +2,7 @@
 #define __NETWORK_SERVER_H
 
 #include <margo.h>
+#include "../common.h"
 #include "network-common.h"
 
 #ifdef __cplusplus
@@ -41,20 +42,6 @@ int network_provider_register(
  *       */
 int network_provider_destroy(
         network_provider_t provider);
-
-/**
- *  * @brief Creates handles and connections to downstream microservice dependencies
- *   *
- *    * @param[in] mid Margo instance
- *     *  @param[in] p provider id
- *      *  @param[in] svr_addr server address
- *       *
- *        * @return NETWORK_SUCCESS or error code defined in network-common.h
- *         */
-void network_create_downstream_handles(
-	margo_instance_id mid, 
-	uint16_t p, 
-	hg_addr_t svr_addr);
 
 #ifdef __cplusplus
 }

@@ -1,10 +1,9 @@
+#include <assert.h>
+#include "../common.h"
 #include "storage-server.h"
 #include "network-client.h"
 #include "memory-client.h"
 #include "compute-client.h"
-#include "../../include/types.h"
-#include <assert.h>
-#include "../common.h"
 
 struct storage_provider {
     margo_instance_id mid;
@@ -69,16 +68,6 @@ int storage_provider_register(
     return STORAGE_SUCCESS;
 }
 
-void storage_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t svr_addr)
-{
-    compute_client_init(mid, &compute_clt);
-    compute_provider_handle_create(compute_clt, svr_addr, p, &compute_ph);
-    memory_client_init(mid, &memory_clt);
-    memory_provider_handle_create(memory_clt, svr_addr, p, &memory_ph);
-    network_client_init(mid, &network_clt);
-    network_provider_handle_create(network_clt, svr_addr, p, &network_ph);
-}
-
 static void storage_finalize_provider(void* p)
 {
     storage_provider_t provider = (storage_provider_t)p;
@@ -94,13 +83,6 @@ int storage_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     storage_finalize_provider(provider);
-
-    network_provider_handle_release(network_ph);
-    network_client_finalize(network_clt);
-    memory_provider_handle_release(memory_ph);
-    memory_client_finalize(memory_clt);
-    compute_provider_handle_release(compute_ph);
-    compute_client_finalize(compute_clt);
 
     return STORAGE_SUCCESS;
 }

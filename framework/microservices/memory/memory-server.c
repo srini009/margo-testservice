@@ -1,23 +1,15 @@
 #include <assert.h>
+#include "../common.h"
 #include "memory-server.h"
-#include "../../include/types.h"
 #include "compute-client.h"
 #include "network-client.h"
 #include "storage-client.h"
-#include "../common.h"
 
 struct memory_provider {
     margo_instance_id mid;
     hg_id_t sum_id;
     /* other provider-specific data */
 };
-
-compute_client_t compute_clt;
-compute_provider_handle_t compute_ph;
-network_client_t network_clt;
-network_provider_handle_t network_ph;
-storage_client_t storage_clt;
-storage_provider_handle_t storage_ph;
 
 static void memory_finalize_provider(void* p);
 
@@ -70,16 +62,6 @@ int memory_provider_register(
     return MEMORY_SUCCESS;
 }
 
-void memory_create_downstream_handles(margo_instance_id mid, uint16_t p, hg_addr_t svr_addr)
-{
-    compute_client_init(mid, &compute_clt);
-    compute_provider_handle_create(compute_clt, svr_addr, p, &compute_ph);
-    network_client_init(mid, &network_clt);
-    network_provider_handle_create(network_clt, svr_addr, p, &network_ph);
-    storage_client_init(mid, &storage_clt);
-    storage_provider_handle_create(storage_clt, svr_addr, p, &storage_ph);
-}
-
 static void memory_finalize_provider(void* p)
 {
     memory_provider_t provider = (memory_provider_t)p;
@@ -95,13 +77,6 @@ int memory_provider_destroy(
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     memory_finalize_provider(provider);
-
-    network_provider_handle_release(network_ph);
-    network_client_finalize(network_clt);
-    compute_provider_handle_release(compute_ph);
-    compute_client_finalize(compute_clt);
-    storage_provider_handle_release(storage_ph);
-    storage_client_finalize(storage_clt);
 
     free(a);
     free(c);

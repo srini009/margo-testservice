@@ -1,4 +1,4 @@
-#include "../../include/types.h"
+#include "../common.h"
 #include "memory-client.h"
 
 struct memory_client {

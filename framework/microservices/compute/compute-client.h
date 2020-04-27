@@ -2,6 +2,7 @@
 #define __COMPUTE_CLIENT_H
 
 #include <margo.h>
+#include "../common.h"
 #include "compute-common.h"
 
 #if defined(__cplusplus)

@@ -2,6 +2,7 @@
 #define __MEMORY_SERVER_H
 
 #include <margo.h>
+#include "../common.h"
 #include "memory-common.h"
 
 #ifdef __cplusplus
@@ -42,19 +43,6 @@ int memory_provider_register(
 int memory_provider_destroy(
         memory_provider_t provider);
 
-/**
- *  * @brief Creates handles and connections to downstream microservice dependencies
- *   *
- *    * @param[in] mid Margo instance
- *     *  @param[in] p provider id
- *      *  @param[in] svr_addr server address
- *       *
- *        * @return MEMORY_SUCCESS or error code defined in network-common.h
- *         */
-void memory_create_downstream_handles(
-	margo_instance_id mid, 
-	uint16_t p, 
-	hg_addr_t svr_addr);
 #ifdef __cplusplus
 }
 #endif

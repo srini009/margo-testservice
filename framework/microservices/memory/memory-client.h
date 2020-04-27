@@ -2,6 +2,7 @@
 #define __MEMORY_CLIENT_H
 
 #include <margo.h>
+#include "../common.h"
 #include "memory-common.h"
 
 #if defined(__cplusplus)
