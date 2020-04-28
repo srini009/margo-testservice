@@ -102,23 +102,19 @@ int memory_provider_handle_release(memory_provider_handle_t handle)
 
 int memory_do_work(
         memory_provider_handle_t handle,
-        int32_t n,
+        int32_t workload_factor,
         hg_bulk_t bulk,
-        int32_t compute,
-        int32_t memory,
-        int32_t file_size,
+	hg_string_t request_structure,
         int32_t* result)
 {
     hg_handle_t   h;
-    memory_in_t     in;
-    memory_out_t   out;
+    symbio_in_t in;
+    symbio_out_t out;
     hg_return_t ret;
 
-    in.n = n;
+    in.workload_factor = workload_factor;
     in.bulk = bulk;
-    in.compute = compute;
-    in.memory = memory;
-    in.file_size = file_size;
+    in.request_structure = request_structure;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

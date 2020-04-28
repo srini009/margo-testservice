@@ -21,12 +21,6 @@ static void storage_finalize_provider(void* p);
 DECLARE_MARGO_RPC_HANDLER(storage_do_work_ult);
 static void storage_do_work_ult(hg_handle_t h);
 /* add other RPC declarations here */
-memory_client_t memory_clt;
-memory_provider_handle_t memory_ph;
-network_client_t network_clt;
-network_provider_handle_t network_ph;
-compute_client_t compute_clt;
-compute_provider_handle_t compute_ph;
 
 int storage_provider_register(
         margo_instance_id mid,
@@ -91,8 +85,8 @@ int storage_provider_destroy(
 static void storage_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    storage_in_t     in;
-    storage_out_t   out;
+    symbio_in_t     in;
+    symbio_out_t   out;
 
     struct rec r;
 
@@ -105,15 +99,13 @@ static void storage_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Do I/O work */
-    for(int i = 0; i < in.file_size; i++) {
+    for(int i = 0; i < in.workload_factor * FILE_SIZE; i++) {
       r.x = i;
       fwrite(&r,sizeof(struct rec),1,fp);
     }
 
     remove("/dev/shm/junk");
     fclose(fp);
-
-    //fprintf(stderr, "Delta is done with its job.\n");
 
     out.ret = 0;
 

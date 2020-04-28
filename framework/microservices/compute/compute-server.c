@@ -81,8 +81,8 @@ int compute_provider_destroy(
 static void compute_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    compute_in_t     in;
-    compute_out_t   out;
+    symbio_in_t in;
+    symbio_out_t out;
 
     int32_t partial_result;
 
@@ -95,10 +95,10 @@ static void compute_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Bogus CPU-bound computation */
-    for (int i = 0 ; i < in.compute; i++)
+    for (int i = 0 ; i < in.workload_factor*COMPUTE_CYCLES; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
-    storage_do_work(GENERATE_PROVIDER_HANDLE("dummy", 3, 0), in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
+    storage_do_work(GENERATE_PROVIDER_HANDLE("dummy", 3, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

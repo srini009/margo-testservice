@@ -110,15 +110,13 @@ int storage_do_work(
         int32_t* result)
 {
     hg_handle_t   h;
-    storage_in_t     in;
-    storage_out_t   out;
+    symbio_in_t in;
+    symbio_out_t out;
     hg_return_t ret;
 
-    in.n = n;
+    in.workload_factor = workload_factor;
     in.bulk = bulk;
-    in.compute = compute;
-    in.memory = memory;
-    in.file_size = file_size;
+    in.request_structure = request_structure;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

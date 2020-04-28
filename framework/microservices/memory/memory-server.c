@@ -88,8 +88,8 @@ int memory_provider_destroy(
 static void memory_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    memory_in_t     in;
-    memory_out_t   out;
+    symbio_in_t     in;
+    symbio_out_t   out;
     
     int32_t partial_result;
 
@@ -101,12 +101,12 @@ static void memory_do_work_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
 
     /* Dummy memory-bound operation */
-    for(int i = 0 ; i < in.memory; i++)
+    for(int i = 0 ; i < in.workload_factor*ARRAY_SIZE; i++)
       c[i] = a[i];
 
     out.ret = 0;
 
-    compute_do_work(GENERATE_PROVIDER_HANDLE("dummy", 2, 0), in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
+    compute_do_work(GENERATE_PROVIDER_HANDLE("dummy", 2, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

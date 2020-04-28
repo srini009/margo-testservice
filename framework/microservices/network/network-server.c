@@ -81,8 +81,8 @@ int network_provider_destroy(
 static void network_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    network_in_t     in;
-    network_out_t   out;
+    symbio_in_t     in;
+    symbio_out_t   out;
     int32_t partial_result;
     int32_t* values;
     hg_bulk_t local_bulk;
@@ -98,7 +98,7 @@ static void network_do_work_ult(hg_handle_t h)
 
     /* Pull in data from network-client through RDMA, simulating a network op */
     values = calloc(in.n, sizeof(*values));
-    hg_size_t buf_size = in.n * sizeof(*values);
+    hg_size_t buf_size = in.workload_factor * TRANSFER_SIZE * sizeof(*values);
 
     ret = margo_bulk_create(mid, 1, (void**)&values, &buf_size,
             HG_BULK_WRITE_ONLY, &local_bulk);
@@ -108,7 +108,7 @@ static void network_do_work_ult(hg_handle_t h)
             in.bulk, 0, local_bulk, 0, buf_size);
     assert(ret == HG_SUCCESS);
 
-    memory_do_work(GENERATE_PROVIDER_HANDLE("dummy", 1, 0), in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
+    memory_do_work(GENERATE_PROVIDER_HANDLE("dummy", 1, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

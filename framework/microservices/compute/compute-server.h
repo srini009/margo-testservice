@@ -34,9 +34,9 @@ int compute_provider_register(
         compute_provider_t* provider);
 
 /**
- *  * @brief Destroys the Alpha provider and deregisters its RPC.
+ *  * @brief Destroys the compute provider and deregisters its RPC.
  *   *
- *    * @param[in] provider Alpha provider
+ *    * @param[in] provider compute provider
  *     *
  *      * @return COMPUTE_SUCCESS or error code defined in compute-common.h
  *       */

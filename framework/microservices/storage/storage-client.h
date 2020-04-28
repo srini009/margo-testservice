@@ -76,22 +76,18 @@ int storage_provider_handle_release(storage_provider_handle_t handle);
  *   * two numbers and return the result.
  *    *
  *     * @param[in] handle provide handle.
- *      * @param[in] x first number.
- *       * @param[in] y second number.
- *        * @param[in] c c
- *         * @param[in] m m
- *          * @param[in] f f
+ *      * @param[in] workload_factor workload factor.
+ *       * @param[in] bulk bulk address.
+ *        * @param[in] request_structure request structure
  *           * @param[out] result resulting value.
  *            *
  *             * @return STORAGE_SUCCESS or error code defined in storage-common.h
  *              */
 int storage_do_work(
         storage_provider_handle_t handle,
-        int32_t n,
+        int32_t workload_factor,
         hg_bulk_t bulk,
-        int32_t compute,
-        int32_t memory,
-        int32_t file_size,
+        hg_string_t request_structure,
         int32_t* result);
 
 #endif

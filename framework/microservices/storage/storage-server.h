@@ -33,9 +33,9 @@ int storage_provider_register(
         storage_provider_t* provider);
 
 /**
- *  * @brief Destroys the Alpha provider and deregisters its RPC.
+ *  * @brief Destroys the storage provider and deregisters its RPC.
  *   *
- *    * @param[in] provider Alpha provider
+ *    * @param[in] provider storage provider
  *     *
  *      * @return STORAGE_SUCCESS or error code defined in storage-common.h
  *       */

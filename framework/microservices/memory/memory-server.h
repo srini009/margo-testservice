@@ -34,9 +34,9 @@ int memory_provider_register(
         memory_provider_t* provider);
 
 /**
- *  * @brief Destroys the Alpha provider and deregisters its RPC.
+ *  * @brief Destroys the memory provider and deregisters its RPC.
  *   *
- *    * @param[in] provider Alpha provider
+ *    * @param[in] provider memory provider
  *     *
  *      * @return MEMORY_SUCCESS or error code defined in memory-common.h
  *       */

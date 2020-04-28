@@ -102,23 +102,21 @@ int network_provider_handle_release(network_provider_handle_t handle)
 
 int network_do_work(
         network_provider_handle_t handle,
-        int32_t x,
+        int32_t workload_factor,
         hg_bulk_t local_bulk,
-        int32_t compute,
+        hg_string_t request_structure,
         int32_t memory,
         int32_t file_size,
         int32_t* result)
 {
     hg_handle_t   h;
-    network_in_t     in;
-    network_out_t   out;
+    symbio_in_t in;
+    symbio_out_t out;
     hg_return_t ret;
 
-    in.n = x;
-    in.bulk = local_bulk;
-    in.compute = compute;
-    in.memory = memory;
-    in.file_size = file_size;
+    in.workload_factor = workload_factor;
+    in.bulk = bulk;
+    in.request_structure = request_structure;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
     if(ret != HG_SUCCESS)

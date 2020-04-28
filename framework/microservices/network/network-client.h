@@ -76,21 +76,18 @@ int network_provider_handle_release(network_provider_handle_t handle);
  *   * two numbers and return the result.
  *    *
  *     * @param[in] handle provide handle.
- *      * @param[in] x first number.
-         * @param[in] compute compute_cycles
-          * @param[in] memory memory copy
-           * @param[in] file_size file size
- *          * @param[out] result resulting value.
+ *      * @param[in] workload_factor workload factor.
+ *       * @param[in] bulk bulk address.
+ *        * @param[in] request_structure request structure
+ *           * @param[out] result resulting value.
  *           *
  *            * @return NETWORK_SUCCESS or error code defined in network-common.h
  *             */
 int network_do_work(
         network_provider_handle_t handle,
-        int32_t x,
+        int32_t workload_factor,
         hg_bulk_t local_bulk,
-        int32_t compute,
-        int32_t memory,
-        int32_t file_size,
+        hg_string_t request_structure,
         int32_t* result);
 
 #endif
