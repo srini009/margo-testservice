@@ -47,7 +47,7 @@ int memory_provider_register(
     p->mid = mid;
 
     id = MARGO_REGISTER_PROVIDER(mid, "memory_do_work",
-            memory_in_t, memory_out_t,
+            symbio_in_t, symbio_out_t,
             memory_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
@@ -106,7 +106,7 @@ static void memory_do_work_ult(hg_handle_t h)
 
     out.ret = 0;
 
-    compute_do_work(GENERATE_PROVIDER_HANDLE("dummy", 2, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
+    compute_do_work(GENERATE_PROVIDER_HANDLE(dummy, compute, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

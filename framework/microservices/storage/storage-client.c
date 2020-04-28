@@ -30,7 +30,7 @@ int storage_client_init(margo_instance_id mid, storage_client_t* client)
     if(flag == HG_TRUE) {
         margo_registered_name(mid, "storage_do_work", &c->sum_id, &flag);
     } else {
-        c->sum_id = MARGO_REGISTER(mid, "storage_do_work", storage_in_t, storage_out_t, NULL);
+        c->sum_id = MARGO_REGISTER(mid, "storage_do_work", symbio_in_t, symbio_out_t, NULL);
     }
 
     *client = c;
@@ -102,11 +102,9 @@ int storage_provider_handle_release(storage_provider_handle_t handle)
 
 int storage_do_work(
         storage_provider_handle_t handle,
-        int32_t n,
+        int32_t workload_factor,
         hg_bulk_t bulk,
-        int32_t compute,
-        int32_t memory,
-        int32_t file_size,
+        hg_string_t request_structure,
         int32_t* result)
 {
     hg_handle_t   h;

@@ -47,7 +47,7 @@ int network_provider_register(
     p->mid = mid;
 
     id = MARGO_REGISTER_PROVIDER(mid, "network_do_work",
-            network_in_t, network_out_t,
+            symbio_in_t, symbio_out_t,
             network_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
@@ -97,7 +97,7 @@ static void network_do_work_ult(hg_handle_t h)
     out.ret = 0;
 
     /* Pull in data from network-client through RDMA, simulating a network op */
-    values = calloc(in.n, sizeof(*values));
+    values = calloc(in.workload_factor, sizeof(*values));
     hg_size_t buf_size = in.workload_factor * TRANSFER_SIZE * sizeof(*values);
 
     ret = margo_bulk_create(mid, 1, (void**)&values, &buf_size,
@@ -108,7 +108,7 @@ static void network_do_work_ult(hg_handle_t h)
             in.bulk, 0, local_bulk, 0, buf_size);
     assert(ret == HG_SUCCESS);
 
-    memory_do_work(GENERATE_PROVIDER_HANDLE("dummy", 1, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
+    memory_do_work(GENERATE_PROVIDER_HANDLE(dummy, memory, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

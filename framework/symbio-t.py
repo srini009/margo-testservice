@@ -199,12 +199,16 @@ class MochiExperiment:
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
 		f.write("#ifndef USER_SERVICES_H\n#define USER_SERVICES_H\n\n")
+		f.write("#include \"microservices/compute/compute-client.h\"\n")
+		f.write("#include \"microservices/memory/memory-client.h\"\n")
+		f.write("#include \"microservices/network/network-client.h\"\n")
+		f.write("#include \"microservices/storage/storage-client.h\"\n\n")
 
 		for service in self.services:
 			f.write("/* " + service.name + " service definitions */ \n")
 			service_provider_handle_definitions = ""
 			for microservice in service.microservices:
-				service_provider_handle_definitions += "extern " + microservice.microservice_type.value + "_provider_handle_t " + service.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(AccessPattern p);\n"
+				service_provider_handle_definitions += "extern " + microservice.microservice_type.value + "_provider_handle_t " + service.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(enum AccessPattern p);\n"
 			service_provider_handle_definitions += "\n\n"
 			f.write(service_provider_handle_definitions)
 			service.generateHeaders()
@@ -224,6 +228,7 @@ def main():
 	s.addMicroservice(NetworkMicroservice(2))
 	s.addMicroservice(ComputeMicroservice(1))
 	s.addMicroservice(StorageMicroservice(1))
+	s.addMicroservice(MemoryMicroservice(1))
 	s.addOperationType(op1)
 	s.addOperationType(op2)
 	m = MochiExperiment("test")

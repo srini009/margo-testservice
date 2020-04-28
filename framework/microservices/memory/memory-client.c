@@ -30,7 +30,7 @@ int memory_client_init(margo_instance_id mid, memory_client_t* client)
     if(flag == HG_TRUE) {
         margo_registered_name(mid, "memory_do_work", &c->sum_id, &flag);
     } else {
-        c->sum_id = MARGO_REGISTER(mid, "memory_do_work", memory_in_t, memory_out_t, NULL);
+        c->sum_id = MARGO_REGISTER(mid, "memory_do_work", symbio_in_t, symbio_out_t, NULL);
     }
 
     *client = c;

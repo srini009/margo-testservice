@@ -24,4 +24,4 @@ all: ./microservices/compute/compute-server.c ./microservices/compute/compute-cl
 	#$(CC) -o client client.o -L. -lcompute-client -lmargo
 
 clean:
-	rm *.o *.csv *.trace *.stats client server core* *.so server_addr* *.pdf hosts*
+	rm *.o *.csv *.trace *.stats client server core* *.so server_addr* *.pdf hosts* rm *_server.h *_client.h user_services.h

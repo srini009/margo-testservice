@@ -86,7 +86,7 @@ int network_provider_handle_release(network_provider_handle_t handle);
 int network_do_work(
         network_provider_handle_t handle,
         int32_t workload_factor,
-        hg_bulk_t local_bulk,
+        hg_bulk_t bulk,
         hg_string_t request_structure,
         int32_t* result);
 

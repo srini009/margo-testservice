@@ -51,7 +51,7 @@ int storage_provider_register(
     p->mid = mid;
 
     id = MARGO_REGISTER_PROVIDER(mid, "storage_do_work",
-            storage_in_t, storage_out_t,
+            symbio_in_t, symbio_out_t,
             storage_do_work_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;

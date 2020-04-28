@@ -30,7 +30,7 @@ int network_client_init(margo_instance_id mid, network_client_t* client)
     if(flag == HG_TRUE) {
         margo_registered_name(mid, "network_do_work", &c->sum_id, &flag);
     } else {
-        c->sum_id = MARGO_REGISTER(mid, "network_do_work", network_in_t, network_out_t, NULL);
+        c->sum_id = MARGO_REGISTER(mid, "network_do_work", symbio_in_t, symbio_out_t, NULL);
     }
 
     *client = c;
@@ -103,10 +103,8 @@ int network_provider_handle_release(network_provider_handle_t handle)
 int network_do_work(
         network_provider_handle_t handle,
         int32_t workload_factor,
-        hg_bulk_t local_bulk,
+        hg_bulk_t bulk,
         hg_string_t request_structure,
-        int32_t memory,
-        int32_t file_size,
         int32_t* result)
 {
     hg_handle_t   h;
