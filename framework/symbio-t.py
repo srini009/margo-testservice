@@ -168,7 +168,7 @@ class Service:
 
 		for microservice in self.microservices:
 			service_provider_handle_generation += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(enum AccessPattern p) {\n"
-			service_provider_handle_generation += "  " + self.name + "_" + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
+			service_provider_handle_generation += "  return " + self.name + "_" + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
 			service_provider_handle_generation += "}\n\n"
 
 		f.write(service_struct)

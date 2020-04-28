@@ -77,7 +77,6 @@ int network_provider_destroy(
     return NETWORK_SUCCESS;
 }
 
-
 static void network_do_work_ult(hg_handle_t h)
 {
     hg_return_t ret;
@@ -97,7 +96,7 @@ static void network_do_work_ult(hg_handle_t h)
     out.ret = 0;
 
     /* Pull in data from network-client through RDMA, simulating a network op */
-    values = calloc(in.workload_factor, sizeof(*values));
+    values = calloc(in.workload_factor * TRANSFER_SIZE, sizeof(*values));
     hg_size_t buf_size = in.workload_factor * TRANSFER_SIZE * sizeof(*values);
 
     ret = margo_bulk_create(mid, 1, (void**)&values, &buf_size,

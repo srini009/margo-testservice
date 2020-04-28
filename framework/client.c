@@ -1,23 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <margo.h>
-#include "-client.h"
-#include "common.h"
 #include <mpi.h>
 #include <unistd.h>
-
-
-void generate_request_characteristics(int32_t * transfer_size, int32_t * compute, int32_t * memory, int32_t * file_size, int32_t * num_requests, int32_t * sleeptime)
-{
-    /* These can be dynamically modified! */
-    *transfer_size = TRANSFER_SIZE;
-    *compute = COMPUTE_CYCLES;
-    *memory = ARRAY_SIZE;
-    *file_size = FILE_SIZE;
-    *num_requests = NUM_REQUESTS;
-    *sleeptime = INVERSE_REQUEST_RATE;
-}
-
+#include "user_services.h"
+#include "network-client.h"
+#include "include/defaults.h"
 
 int main(int argc, char** argv)
 {
@@ -32,7 +20,7 @@ int main(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
     char svr_addr_str[128];
-    uint16_t provider_id = 42;
+    uint16_t provider_id = 0;
     char filename[128];
 
     margo_instance_id mid = margo_init("ofi+verbs", MARGO_CLIENT_MODE, 0, 0);
@@ -57,34 +45,31 @@ int main(int argc, char** argv)
     hg_addr_t svr_addr;
     margo_addr_lookup(mid, svr_addr_str, &svr_addr);
 
-    alpha_client_t alpha_clt;
-    alpha_provider_handle_t alpha_ph;
+    network_client_t network_clt;
+    network_provider_handle_t network_ph;
 
-    alpha_client_init(mid, &alpha_clt);
+    network_client_init(mid, &network_clt);
 
-    alpha_provider_handle_create(alpha_clt, svr_addr, provider_id, &alpha_ph);
+    network_provider_handle_create(network_clt, svr_addr, provider_id, &network_ph);
 
     int32_t result;
-    int32_t transfer_size, compute, memory, file_size, num_requests, sleeptime;
 
-    generate_request_characteristics(&transfer_size, &compute, &memory, &file_size, &num_requests, &sleeptime);
-
-    int32_t * values = (int32_t*)calloc(transfer_size, sizeof(int32_t));
-    hg_size_t size = transfer_size*sizeof(int32_t);
+    int32_t * values = (int32_t*)calloc(TRANSFER_SIZE, sizeof(int32_t));
+    hg_size_t size = TRANSFER_SIZE*sizeof(int32_t);
     int32_t true_sleeptime;
+    hg_string_t request_structure = "dummy";
 
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
 
     MPI_Barrier(MPI_COMM_WORLD);
-
-    for(int i=0; i < num_requests; i++) {
-      alpha_do_work(alpha_ph, transfer_size, local_bulk, compute, memory, file_size, &result);
+    for(int i=0; i < NUM_REQUESTS; i++) {
+      network_do_work(network_ph, 1, local_bulk, request_structure, &result);
     }
 
-    alpha_provider_handle_release(alpha_ph);
+    network_provider_handle_release(network_ph);
 
-    alpha_client_finalize(alpha_clt);
+    network_client_finalize(network_clt);
 
     margo_bulk_free(local_bulk);
 
