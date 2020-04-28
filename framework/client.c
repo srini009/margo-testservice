@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <margo.h>
-#include "alpha-client.h"
+#include "-client.h"
 #include "common.h"
 #include <mpi.h>
 #include <unistd.h>

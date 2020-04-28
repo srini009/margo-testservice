@@ -1,7 +1,7 @@
 CC=mpicc
 CFLAGS = -I/. -I/include -I./microservices/compute -I./microservices/memory -I./microservices/network -I./microservices/storage -g
 
-all: ./microservices/compute/compute-server.c ./microservices/compute/compute-client.c ./microservices/memory/memory-server.c ./microservices/memory/memory-client.c ./microservices/network/network-server.c ./microservices/network/network-client.c ./microservices/storage/storage-client.c ./microservices/storage/storage-server.c  #client.c server.c
+all: ./microservices/compute/compute-server.c ./microservices/compute/compute-client.c ./microservices/memory/memory-server.c ./microservices/memory/memory-client.c ./microservices/network/network-server.c ./microservices/network/network-client.c ./microservices/storage/storage-client.c ./microservices/storage/storage-server.c  server.c #client.c
 	$(CC) -c $(CFLAGS) -fPIC ./microservices/compute/compute-server.c -o compute-server.o
 	$(CC) -c $(CFLAGS) -fPIC ./microservices/compute/compute-client.c -o compute-client.o
 	$(CC) -shared -o libcompute-client.so compute-client.o
@@ -18,9 +18,9 @@ all: ./microservices/compute/compute-server.c ./microservices/compute/compute-cl
 	$(CC) -c $(CFLAGS) -fPIC ./microservices/storage/storage-client.c -o storage-client.o
 	$(CC) -shared -o libstorage-client.so storage-client.o
 	$(CC) -shared -o libstorage-server.so storage-server.o
-	#$(CC) -c $(CFLAGS) server.c -o server.o
+	$(CC) -c $(CFLAGS) server.c -o server.o
 	#$(CC) -c $(CFLAGS) client.c -o client.o
-	#$(CC) -o server server.o -L. -lcompute-client -lcompute-server -lmemory-client -lmemory-server -lnetwork-client -lnetwork-server -lstorage-client -lstorage-server -lmargo $(LIBS) 
+	$(CC) -o server server.o -L. -lcompute-client -lcompute-server -lmemory-client -lmemory-server -lnetwork-client -lnetwork-server -lstorage-client -lstorage-server -lmargo $(LIBS) 
 	#$(CC) -o client client.o -L. -lcompute-client -lmargo
 
 clean:

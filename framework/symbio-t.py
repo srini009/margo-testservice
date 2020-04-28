@@ -144,12 +144,12 @@ class Service:
 		service_init_function += "  hg_addr_t my_address;\n  margo_addr_self(mid, &my_address);\n\n"
 	
 		for microservice in self.microservices:
-			service_init_function += "  " + microservice.microservice_type.value + "_client_init(mid, &" + microservice.microservice_type.value + "_clt);\n"
+			service_init_function += "  " + microservice.microservice_type.value + "_client_init(mid, &" + self.name + "_" + microservice.microservice_type.value + "_clt);\n"
 			service_init_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
 			service_init_function += "    d->" + microservice.microservice_type.value + "[i] = GENERATE_UNIQUE_PROVIDER_ID();\n"
 			service_init_function += "    " + microservice.microservice_type.value + "_provider_register(mid, d->" + microservice.microservice_type.value + "[i], " + \
 							microservice.microservice_type.value.upper() + "_ABT_POOL_DEFAULT, " + microservice.microservice_type.value.upper() + "_PROVIDER_IGNORE);\n"
-			service_init_function += "    " + microservice.microservice_type.value + "_provider_handle_create(" + microservice.microservice_type.value + ", my_address, d->" + microservice.microservice_type.value + "[i], &" + microservice.microservice_type.value + "_local_ph[i]);\n"
+			service_init_function += "    " + microservice.microservice_type.value + "_provider_handle_create(" + self.name + "_" + microservice.microservice_type.value + "_clt, my_address, d->" + microservice.microservice_type.value + "[i], &" + self.name + "_" + microservice.microservice_type.value + "_local_ph[i]);\n"
 			service_init_function += "  }\n\n"
 
 		service_init_function += "}\n\n"
@@ -159,16 +159,16 @@ class Service:
 
 		for microservice in self.microservices:
 			service_finalize_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
-			service_finalize_function += "    " + microservice.microservice_type.value + "_provider_handle_release(" + microservice.microservice_type.value +"_local_ph[i]);\n"
+			service_finalize_function += "    " + microservice.microservice_type.value + "_provider_handle_release(" + self.name + "_" + microservice.microservice_type.value +"_local_ph[i]);\n"
 			service_finalize_function += "  }\n"
-			service_finalize_function += "  " + microservice.microservice_type.value + "_client_finalize(" + microservice.microservice_type.value + "_clt);\n\n"
+			service_finalize_function += "  " + microservice.microservice_type.value + "_client_finalize(" + self.name + "_" + microservice.microservice_type.value + "_clt);\n\n"
 			
 		service_finalize_function += "}\n\n"	
 		service_provider_handle_generation = ""
 
 		for microservice in self.microservices:
-			service_provider_handle_generation += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(AccessPattern p) {\n"
-			service_provider_handle_generation += "  " + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
+			service_provider_handle_generation += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(enum AccessPattern p) {\n"
+			service_provider_handle_generation += "  " + self.name + "_" + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
 			service_provider_handle_generation += "}\n\n"
 
 		f.write(service_struct)

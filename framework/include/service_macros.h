@@ -19,7 +19,7 @@
 static unsigned int provider_id_counter = 0;
 
 #define GENERATE_UNIQUE_PROVIDER_ID() \
-    provider_id++;
+    provider_id_counter++;
     
 #define INIT_MARGO(connection_type, num_threads) \
     MPI_Init(&argc, &argv);\
@@ -51,10 +51,10 @@ static unsigned int provider_id_counter = 0;
     margo_wait_for_finalize(mid);\
     MPI_Finalize();
 
-#define INIT_AND_RUN_SERVICE(name, d)\
-    initialize_##name(mid, name##_service* d)
+#define INIT_AND_RUN_SERVICE(name, d) \
+    initialize_##name##_service(mid, d)
 
-#define FINALIZE_SERVICE(name, d)\
-    finalize_##name(mid, name##_service* d)
+#define FINALIZE_SERVICE(name, d) \
+    finalize_##name##_service(mid, d)
 
 #endif
