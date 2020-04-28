@@ -98,7 +98,7 @@ static void compute_do_work_ult(hg_handle_t h)
     for (int i = 0 ; i < in.compute; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
-    storage_do_work(storage_ph, in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
+    storage_do_work(GENERATE_PROVIDER_HANDLE("dummy", 3, 0), in.n, in.bulk, in.compute, in.memory, in.file_size, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

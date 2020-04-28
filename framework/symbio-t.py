@@ -133,8 +133,8 @@ class Service:
 			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice.microservice_type.value + " = " + str(microservice.num_providers) + ";\n"
 		service_clients_and_providers = ""
 		for microservice in self.microservices:
-			service_clients_and_providers += "static " + microservice.microservice_type.value + "_client_t " + microservice.microservice_type.value + "_clt;\n"
-			service_clients_and_providers += "static " + microservice.microservice_type.value + "_provider_handle_t " + microservice.microservice_type.value + "_local_ph[" +str(microservice.num_providers) + "];\n"
+			service_clients_and_providers += microservice.microservice_type.value + "_client_t " + self.name + "_" + microservice.microservice_type.value + "_clt;\n"
+			service_clients_and_providers += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_" + microservice.microservice_type.value + "_local_ph[" +str(microservice.num_providers) + "];\n"
 
 		service_clients_and_providers += "\n\n"
 		
@@ -153,7 +153,7 @@ class Service:
 			service_init_function += "  }\n\n"
 
 		service_init_function += "}\n\n"
-	
+
 		service_finalize_function = "void finalize_" + self.name + "_service(margo_instance_id mid, " + self.name + "_service* d) {\n"
 		service_finalize_function += "  hg_addr_t my_address;\n  margo_addr_self(mid, &my_address);\n\n"
 
@@ -163,12 +163,20 @@ class Service:
 			service_finalize_function += "  }\n"
 			service_finalize_function += "  " + microservice.microservice_type.value + "_client_finalize(" + microservice.microservice_type.value + "_clt);\n\n"
 			
-		service_finalize_function += "}\n"	
+		service_finalize_function += "}\n\n"	
+		service_provider_handle_generation = ""
+
+		for microservice in self.microservices:
+			service_provider_handle_generation += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(AccessPattern p) {\n"
+			service_provider_handle_generation += "  " + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
+			service_provider_handle_generation += "}\n\n"
+
 		f.write(service_struct)
 		f.write(service_provider_num_constants)
 		f.write(service_clients_and_providers)
 		f.write(service_init_function)
 		f.write(service_finalize_function)
+		f.write(service_provider_handle_generation)
 		f.flush()
 		f.close()
 
@@ -176,6 +184,34 @@ class Service:
 		self.__generateClientHeader()
 		self.__generateServiceHeader()
 
+
+class MochiExperiment:
+	def __init__(self, name):
+		self.name = name
+		self.legal_boilerplate = "/*\n  * (C) 2015 The University of Chicago\n  *\n  * See COPYRIGHT in top-level directory.\n*/\n"
+		self.services = list()
+
+	def addService(self, s):
+		self.services.append(s)
+
+	def generateHeaders(self):
+		filename = "user_services.h"
+		f = open(filename, "w")
+		f.write(self.legal_boilerplate)
+		f.write("#ifndef USER_SERVICES_H\n#define USER_SERVICES_H\n\n")
+
+		for service in self.services:
+			f.write("/* " + service.name + " service definitions */ \n")
+			service_provider_handle_definitions = ""
+			for microservice in service.microservices:
+				service_provider_handle_definitions += "extern " + microservice.microservice_type.value + "_provider_handle_t " + service.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(AccessPattern p);\n"
+			service_provider_handle_definitions += "\n\n"
+			f.write(service_provider_handle_definitions)
+			service.generateHeaders()
+
+		f.write("#endif")
+		f.flush()
+		f.close()
 	
 def main():
 	a = OperationTree(NetworkMicroservice.functions[0])
@@ -190,7 +226,9 @@ def main():
 	s.addMicroservice(StorageMicroservice(1))
 	s.addOperationType(op1)
 	s.addOperationType(op2)
-	s.generateHeaders()
+	m = MochiExperiment("test")
+	m.addService(s)
+	m.generateHeaders()
 
 main()
 

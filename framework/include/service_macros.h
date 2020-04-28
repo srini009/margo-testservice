@@ -1,3 +1,6 @@
+#ifndef SERVICE_MACROS_H
+#define SERVICE_MACROS_H
+
 /*
   * (C) 2015 The University of Chicago
   *
@@ -53,3 +56,5 @@ static unsigned int provider_id_counter = 0;
 
 #define FINALIZE_SERVICE(name, d)\
     finalize_##name(mid, name##_service* d)
+
+#endif

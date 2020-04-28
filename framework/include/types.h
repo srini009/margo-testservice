@@ -1,5 +1,5 @@
-#ifndef PARAM_H
-#define PARAM_H
+#ifndef TYPES_H
+#define TYPES_H
 
 #include <mercury.h>
 #include <mercury_macros.h>

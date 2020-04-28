@@ -1,9 +1,14 @@
-/* Base values for various magin numbers and enums */
+/* Base values for various magic numbers and enums */
 
 #ifndef COMMON_H
 #define COMMON_H
 
 #include "../include/types.h"
+#include "../user_services.h"
+
+
+#define GENERATE_PROVIDER_HANDLE(serviceName, microservice, accessPattern) \
+  serviceName##_service_generate_##microservice##_provider_handle(accessPattern)
 
 #define TRANSFER_SIZE 10 //RDMA-based data pull size
 #define ARRAY_SIZE 1000 //Size of array being copied in memory
