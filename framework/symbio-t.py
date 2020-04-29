@@ -171,12 +171,33 @@ class Service:
 			service_provider_handle_generation += "  return " + self.name + "_" + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
 			service_provider_handle_generation += "}\n\n"
 
+		service_write_local_provider_ids = ""
+		service_write_local_provider_ids += "void " + self.name + "_write_local_provider_ids(int my_id) {\n"
+		service_write_local_provider_ids += "  char filename[100];\n  sprintf(filename, \"" + self.name + "_provider_ids_%d.txt\", my_id);\n"
+		service_write_local_provider_ids += "  FILE *fp = fopen(filename, \"w\");\n"
+		for microservice in self.microservices:
+			if(microservice.microservice_type.value == "network"):
+				service_write_local_provider_ids += "  fprintf(fp, \"0 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
+			if(microservice.microservice_type.value == "memory"):
+				service_write_local_provider_ids += "  fprintf(fp, \"1 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
+			if(microservice.microservice_type.value == "compute"):
+				service_write_local_provider_ids += "  fprintf(fp, \"2 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
+			if(microservice.microservice_type.value == "storage"):
+				service_write_local_provider_ids += "  fprintf(fp, \"3 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
+
+		service_write_local_provider_ids += "  fflush(fp); \n  fclose(fp);\n"
+		service_write_local_provider_ids += "}\n\n"
+
+		service_init_remote_provider_handles = ""
+		service_init_remote_provider_handles += "void " + self.name + "_initialize_remote_provider_handles(int my_id, int total_servers) {}\n\n"
 		f.write(service_struct)
 		f.write(service_provider_num_constants)
 		f.write(service_clients_and_providers)
 		f.write(service_init_function)
 		f.write(service_finalize_function)
 		f.write(service_provider_handle_generation)
+		f.write(service_write_local_provider_ids)
+		f.write(service_init_remote_provider_handles)
 		f.flush()
 		f.close()
 

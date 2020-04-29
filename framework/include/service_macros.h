@@ -24,12 +24,14 @@ static unsigned int provider_id_counter = 0;
 #define INIT_MARGO(connection_type, num_threads) \
     MPI_Init(&argc, &argv);\
     int rank;\
+    int size;\
     char filename[100];\
     char addr_str[128];\
     char *temp;\
     char actual_addr[128];\
     size_t addr_str_size = 128;\
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);\
+    MPI_Comm_size(MPI_COMM_WORLD, &size);\
     sprintf(filename, "server_addr_%d.txt", rank);\
     FILE *fp = fopen(filename, "w");\
     margo_instance_id mid = margo_init(#connection_type, MARGO_SERVER_MODE, 0, num_threads);\
@@ -52,7 +54,11 @@ static unsigned int provider_id_counter = 0;
     MPI_Finalize();
 
 #define INIT_AND_RUN_SERVICE(name, d) \
-    initialize_##name##_service(mid, d)
+    initialize_##name##_service(mid, d); \
+    MPI_Barrier(MPI_COMM_WORLD); \
+    name##_write_local_provider_ids(rank); \
+    MPI_Barrier(MPI_COMM_WORLD); \
+    name##_initialize_remote_provider_handles(rank, size);
 
 #define FINALIZE_SERVICE(name, d) \
     finalize_##name##_service(mid, d)
