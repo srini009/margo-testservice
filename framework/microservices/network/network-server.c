@@ -107,7 +107,7 @@ static void network_do_work_ult(hg_handle_t h)
             in.bulk, 0, local_bulk, 0, buf_size);
     assert(ret == HG_SUCCESS);
 
-    memory_do_work(GENERATE_PROVIDER_HANDLE(dummy, memory, 0), in.workload_factor, in.bulk, in.request_structure, &partial_result);
+    memory_do_work(GENERATE_PROVIDER_HANDLE(dummy, memory, 1), in.workload_factor, in.bulk, in.request_structure, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

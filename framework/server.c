@@ -8,6 +8,7 @@ int main(int argc, char** argv)
     dummy_service d;
 
     INIT_AND_RUN_SERVICE(dummy, &d);
+    fprintf(stderr, "Ready to play.\n");
     
     //FINALIZE_SERVICE(dummy, &d); /* Not calling this function as I want the service to be running till the client tells me to shutdown */
 
