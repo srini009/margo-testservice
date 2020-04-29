@@ -172,9 +172,9 @@ class Service:
 			service_provider_handle_generation += "}\n\n"
 
 		service_write_local_provider_ids = ""
-		service_write_local_provider_ids += "void " + self.name + "_write_local_provider_ids(int my_id) {\n"
+		service_write_local_provider_ids += "void " + self.name + "_write_local_provider_ids(int my_id, " + self.name + "_service* d) {\n"
 		service_write_local_provider_ids += "  char filename[100];\n  sprintf(filename, \"" + self.name + "_provider_ids_%d.txt\", my_id);\n"
-		service_write_local_provider_ids += "  FILE *fp = fopen(filename, \"w\");\n"
+		service_write_local_provider_ids += "  FILE *fp = fopen(filename, \"w\");\n\n\n"
 		for microservice in self.microservices:
 			if(microservice.microservice_type.value == "network"):
 				service_write_local_provider_ids += "  fprintf(fp, \"0 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
@@ -184,6 +184,9 @@ class Service:
 				service_write_local_provider_ids += "  fprintf(fp, \"2 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
 			if(microservice.microservice_type.value == "storage"):
 				service_write_local_provider_ids += "  fprintf(fp, \"3 %d\\n\", " + self.name + "_service_N_" + microservice.microservice_type.value + ");\n"
+
+			service_write_local_provider_ids += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++)\n"
+			service_write_local_provider_ids += "    fprintf(fp, \"%d\\n\", d->" + microservice.microservice_type.value + "[i]);\n"
 
 		service_write_local_provider_ids += "  fflush(fp); \n  fclose(fp);\n"
 		service_write_local_provider_ids += "}\n\n"

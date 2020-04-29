@@ -56,7 +56,7 @@ static unsigned int provider_id_counter = 0;
 #define INIT_AND_RUN_SERVICE(name, d) \
     initialize_##name##_service(mid, d); \
     MPI_Barrier(MPI_COMM_WORLD); \
-    name##_write_local_provider_ids(rank); \
+    name##_write_local_provider_ids(rank, d); \
     MPI_Barrier(MPI_COMM_WORLD); \
     name##_initialize_remote_provider_handles(rank, size);
 
