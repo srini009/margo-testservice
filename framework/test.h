@@ -159,12 +159,12 @@ void dummy_write_local_provider_ids(int my_id, dummy_service* d) {
   fprintf(fp, "2 %d\n", dummy_service_N_compute);
   for(int i = 0; i < dummy_service_N_compute; i++)
     fprintf(fp, "%d\n", d->compute[i]);
-  fprintf(fp, "3 %d\n", dummy_service_N_storage);
-  for(int i = 0; i < dummy_service_N_storage; i++)
-    fprintf(fp, "%d\n", d->storage[i]);
   fprintf(fp, "1 %d\n", dummy_service_N_memory);
   for(int i = 0; i < dummy_service_N_memory; i++)
     fprintf(fp, "%d\n", d->memory[i]);
+  fprintf(fp, "3 %d\n", dummy_service_N_storage);
+  for(int i = 0; i < dummy_service_N_storage; i++)
+    fprintf(fp, "%d\n", d->storage[i]);
   fflush(fp); 
   fclose(fp);
 }
