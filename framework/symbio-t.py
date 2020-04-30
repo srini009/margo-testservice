@@ -131,10 +131,13 @@ class Service:
 		
 		for microservice in self.microservices:
 			service_provider_num_constants += "static int " + self.name + "_service_N_" + microservice.microservice_type.value + " = " + str(microservice.num_providers) + ";\n"
+		service_provider_num_constants += "static int " + self.name + "_num_remote_servers;\n"
+
 		service_clients_and_providers = ""
 		for microservice in self.microservices:
 			service_clients_and_providers += microservice.microservice_type.value + "_client_t " + self.name + "_" + microservice.microservice_type.value + "_clt;\n"
 			service_clients_and_providers += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_" + microservice.microservice_type.value + "_local_ph[" +str(microservice.num_providers) + "];\n"
+			service_clients_and_providers += microservice.microservice_type.value + "_provider_handle_t *" + self.name + "_" + microservice.microservice_type.value + "_remote_ph;\n"
 
 		service_clients_and_providers += "\n\n"
 		
@@ -161,6 +164,9 @@ class Service:
 			service_finalize_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "; i++) {\n"
 			service_finalize_function += "    " + microservice.microservice_type.value + "_provider_handle_release(" + self.name + "_" + microservice.microservice_type.value +"_local_ph[i]);\n"
 			service_finalize_function += "  }\n"
+			service_finalize_function += "  for(int i = 0; i < " + self.name + "_service_N_" + microservice.microservice_type.value + "*" + self.name + "_num_remote_servers; i++) {\n"
+			service_finalize_function += "    " + microservice.microservice_type.value + "_provider_handle_release(" + self.name + "_" + microservice.microservice_type.value +"_remote_ph[i]);\n"
+			service_finalize_function += "  }\n"
 			service_finalize_function += "  " + microservice.microservice_type.value + "_client_finalize(" + self.name + "_" + microservice.microservice_type.value + "_clt);\n\n"
 			
 		service_finalize_function += "}\n\n"	
@@ -168,7 +174,12 @@ class Service:
 
 		for microservice in self.microservices:
 			service_provider_handle_generation += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(enum AccessPattern p) {\n"
-			service_provider_handle_generation += "  return " + self.name + "_" + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
+			service_provider_handle_generation += "  switch(p) {\n"
+			service_provider_handle_generation += "    case(Fixed): \n"
+			service_provider_handle_generation += "      return " + self.name + "_" + microservice.microservice_type.value + "_local_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
+			service_provider_handle_generation += "    case(Dynamic): \n"
+			service_provider_handle_generation += "      return " + self.name + "_" + microservice.microservice_type.value + "_remote_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "*" + self.name + "_num_remote_servers];\n"
+			service_provider_handle_generation += "  }\n"
 			service_provider_handle_generation += "}\n\n"
 
 		service_write_local_provider_ids = ""
@@ -192,7 +203,35 @@ class Service:
 		service_write_local_provider_ids += "}\n\n"
 
 		service_init_remote_provider_handles = ""
-		service_init_remote_provider_handles += "void " + self.name + "_initialize_remote_provider_handles(int my_id, int total_servers) {}\n\n"
+		service_init_remote_provider_handles += "void " + self.name + "_initialize_remote_provider_handles(margo_instance_id mid, int my_id, int total_servers) {\n"
+		service_init_remote_provider_handles += "  " + self.name + "_num_remote_servers = total_servers - 1;\n"
+		for microservice in self.microservices:
+			service_init_remote_provider_handles += "  int n_" + microservice.microservice_type.value + " = " + self.name + "_service_N_" + microservice.microservice_type.value + "*" + self.name + "_num_remote_servers;\n"
+			service_init_remote_provider_handles += "  " + self.name + "_" + microservice.microservice_type.value + "_remote_ph = (" + microservice.microservice_type.value + "_provider_handle_t*)malloc(n_" + microservice.microservice_type.value + "*sizeof(" + microservice.microservice_type.value + "_provider_handle_t));\n"
+
+		service_init_remote_provider_handles += "\n"
+
+		service_init_remote_provider_handles += "  int j, k = 0;\n"
+		service_init_remote_provider_handles += "  for(int i=0; i < total_servers; i++) {\n"
+		service_init_remote_provider_handles += "    if(i != my_id) {\n"
+		service_init_remote_provider_handles += "      char filename[100], filename1[100];\n      char str[1000], svr_addr_str[80];\n"
+		service_init_remote_provider_handles += "      sprintf(filename, \"" + self.name + "_provider_ids_%d.txt\", i);\n"
+		service_init_remote_provider_handles += "      FILE *fp = fopen(filename, \"r\");\n      FILE * fp1;\n      int ret;\n"
+		service_init_remote_provider_handles += "      sprintf(filename1, \"server_addr_%d.txt\", i);\n\n"
+		service_init_remote_provider_handles += "      fp1 = fopen(filename1, \"r\");\n"
+		service_init_remote_provider_handles += "      fscanf(fp1, \"%s\", svr_addr_str);\n      hg_addr_t remote_address;\n      margo_addr_lookup(mid, svr_addr_str, &remote_address);\n      fclose(fp1);\n"
+
+		for microservice in self.microservices:
+			service_init_remote_provider_handles += "      fgets(str, 60, fp);\n      j = 0;\n"
+			service_init_remote_provider_handles += "      while(j < " + self.name + "_service_N_" + microservice.microservice_type.value + ") {\n"
+			service_init_remote_provider_handles += "        int id;\n        fgets(str, 60, fp);\n        sscanf(str, \"%d\", &id);\n"
+			service_init_remote_provider_handles += "        ret = " + microservice.microservice_type.value + "_provider_handle_create(" + self.name + "_" + microservice.microservice_type.value + "_clt, remote_address, id, &" + self.name + "_" + microservice.microservice_type.value +"_remote_ph[j+(k*" + self.name + "_service_N_" + microservice.microservice_type.value + ")]);\n"
+			service_init_remote_provider_handles += "        assert(ret == " + microservice.microservice_type.value.upper() + "_SUCCESS);\n"
+			service_init_remote_provider_handles += "        j++;\n"
+			service_init_remote_provider_handles += "      }\n" 		
+		service_init_remote_provider_handles += "    }\n"
+		service_init_remote_provider_handles += "  }\n"
+		service_init_remote_provider_handles += "}\n\n"
 		f.write(service_struct)
 		f.write(service_provider_num_constants)
 		f.write(service_clients_and_providers)
