@@ -33,7 +33,7 @@ fi
         date1=$(($(date +%s%N)/1000000))
 
         echo "Running now....."
-	mpirun -np $nprocs -envall -f $hostfile -ppn $ppn ./client 5
+	mpirun -np $nprocs -envall -f $hostfile -ppn $ppn ./client 4
 
             sleep 1
         date2=$(($(date +%s%N)/1000000))

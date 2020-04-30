@@ -72,20 +72,32 @@ void finalize_dummy_service(margo_instance_id mid, dummy_service* d) {
   for(int i = 0; i < dummy_service_N_network; i++) {
     network_provider_handle_release(dummy_network_local_ph[i]);
   }
+  for(int i = 0; i < dummy_service_N_network*dummy_num_remote_servers; i++) {
+    network_provider_handle_release(dummy_network_remote_ph[i]);
+  }
   network_client_finalize(dummy_network_clt);
 
   for(int i = 0; i < dummy_service_N_compute; i++) {
     compute_provider_handle_release(dummy_compute_local_ph[i]);
+  }
+  for(int i = 0; i < dummy_service_N_compute*dummy_num_remote_servers; i++) {
+    compute_provider_handle_release(dummy_compute_remote_ph[i]);
   }
   compute_client_finalize(dummy_compute_clt);
 
   for(int i = 0; i < dummy_service_N_storage; i++) {
     storage_provider_handle_release(dummy_storage_local_ph[i]);
   }
+  for(int i = 0; i < dummy_service_N_storage*dummy_num_remote_servers; i++) {
+    storage_provider_handle_release(dummy_storage_remote_ph[i]);
+  }
   storage_client_finalize(dummy_storage_clt);
 
   for(int i = 0; i < dummy_service_N_memory; i++) {
     memory_provider_handle_release(dummy_memory_local_ph[i]);
+  }
+  for(int i = 0; i < dummy_service_N_memory*dummy_num_remote_servers; i++) {
+    memory_provider_handle_release(dummy_memory_remote_ph[i]);
   }
   memory_client_finalize(dummy_memory_clt);
 
@@ -97,7 +109,6 @@ network_provider_handle_t dummy_service_generate_network_provider_handle(enum Ac
      return dummy_network_local_ph[rand()%dummy_service_N_network];
      break;
     case Dynamic:
-     fprintf(stderr, "In the game.\n");
      return dummy_network_remote_ph[rand()%(dummy_service_N_network*dummy_num_remote_servers)];
      break;
   }
@@ -109,7 +120,6 @@ compute_provider_handle_t dummy_service_generate_compute_provider_handle(enum Ac
      return dummy_compute_local_ph[rand()%dummy_service_N_compute];
      break;
     case Dynamic:
-     fprintf(stderr, "In the game.\n");
      return dummy_compute_remote_ph[rand()%(dummy_service_N_compute*dummy_num_remote_servers)];
      break;
   }
@@ -121,7 +131,6 @@ storage_provider_handle_t dummy_service_generate_storage_provider_handle(enum Ac
      return dummy_storage_local_ph[rand()%dummy_service_N_storage];
      break;
     case Dynamic:
-     fprintf(stderr, "In the game.\n");
      return dummy_storage_remote_ph[rand()%(dummy_service_N_storage*dummy_num_remote_servers)];
      break;
   }
@@ -133,7 +142,6 @@ memory_provider_handle_t dummy_service_generate_memory_provider_handle(enum Acce
      return dummy_memory_local_ph[rand()%dummy_service_N_memory];
      break;
     case Dynamic:
-     fprintf(stderr, "In the game.\n");
      return dummy_memory_remote_ph[rand()%(dummy_service_N_memory*dummy_num_remote_servers)];
      break;
   }
@@ -174,21 +182,24 @@ void dummy_initialize_remote_provider_handles(margo_instance_id mid, int my_id, 
   int n_storage = dummy_service_N_storage*(total_servers - 1);
   dummy_storage_remote_ph = (storage_provider_handle_t*)malloc(n_storage*sizeof(storage_provider_handle_t));
 
-  int j;
+  int j, k = 0;
  
   for(int i=0; i < total_servers; i++) {
+    
     if(i != my_id) {
       char filename[100], filename1[100];
       char str[1000], svr_addr_str[80];
       sprintf(filename, "dummy_provider_ids_%d.txt", i);
       FILE *fp = fopen(filename, "r");
       FILE * fp1;
+      int ret;
       sprintf(filename1, "server_addr_%d.txt", i);
 
       fp1 = fopen(filename1, "r");
       fscanf(fp1, "%s", svr_addr_str);
       hg_addr_t remote_address;
       margo_addr_lookup(mid, svr_addr_str, &remote_address);
+      fclose(fp1);
 
       fgets(str, 60, fp);
       j = 0;
@@ -196,9 +207,8 @@ void dummy_initialize_remote_provider_handles(margo_instance_id mid, int my_id, 
         int id;
         fgets(str, 60, fp);
         sscanf(str, "%d", &id);
-        network_provider_handle_create(dummy_network_clt, remote_address, id, &dummy_network_remote_ph[j]); 
-        fprintf(stderr, "%p\n", dummy_network_remote_ph[j]);
-
+        ret = network_provider_handle_create(dummy_network_clt, remote_address, id, &dummy_network_remote_ph[j+(k*dummy_service_N_network)]); 
+        assert(ret == NETWORK_SUCCESS);
         j++;
       }      
 
@@ -208,7 +218,8 @@ void dummy_initialize_remote_provider_handles(margo_instance_id mid, int my_id, 
         int id;
         fgets(str, 60, fp);
         sscanf(str, "%d", &id);
-        compute_provider_handle_create(dummy_compute_clt, remote_address, id, &dummy_compute_remote_ph[j]); 
+        compute_provider_handle_create(dummy_compute_clt, remote_address, id, &dummy_compute_remote_ph[j+(k*dummy_service_N_compute)]); 
+        assert(ret == COMPUTE_SUCCESS);
         j++;
       }      
 
@@ -218,7 +229,8 @@ void dummy_initialize_remote_provider_handles(margo_instance_id mid, int my_id, 
         int id;
         fgets(str, 60, fp);
         sscanf(str, "%d", &id);
-        memory_provider_handle_create(dummy_memory_clt, remote_address, id, &dummy_memory_remote_ph[j]); 
+        memory_provider_handle_create(dummy_memory_clt, remote_address, id, &dummy_memory_remote_ph[j+(k*dummy_service_N_memory)]); 
+        assert(ret == MEMORY_SUCCESS);
         j++;
       }      
 
@@ -228,11 +240,13 @@ void dummy_initialize_remote_provider_handles(margo_instance_id mid, int my_id, 
         int id;
         fgets(str, 60, fp);
         sscanf(str, "%d", &id);
-        storage_provider_handle_create(dummy_storage_clt, remote_address, id, &dummy_storage_remote_ph[j]); 
+        storage_provider_handle_create(dummy_storage_clt, remote_address, id, &dummy_storage_remote_ph[j+(k*dummy_service_N_storage)]); 
+        assert(ret == STORAGE_SUCCESS);
         j++;
       }      
+      fclose(fp);
+    k++;
     }
   } 
-
 }
 
