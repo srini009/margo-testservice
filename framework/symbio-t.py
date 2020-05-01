@@ -40,8 +40,8 @@ class StorageMicroservice:
 		self.microservice_type = Microservice.Storage
 
 class AccessPattern(Enum):
-	Fixed = 1
-	Dynamic = 2
+	Fixed = 0
+	Dynamic = 1
 
 class OperationTree:
 	def __init__(self, microservice_function, first=None, second=None, third=None):
@@ -57,12 +57,12 @@ class OperationTree:
 		else:
 			requestStructure += ',{'
 		
-		requestStructure += '"val": ' + '"'+str(self.microservice_function) + '"'
+		requestStructure += '\\"microservice_function\\": ' + '\\"'+str(self.microservice_function) + '\\"'
 		if accessPattern != None:
-			requestStructure += ',' + '"accessPattern": ' + '"'+ str(accessPattern) + '"'
+			requestStructure += ',' + '\\"accessPattern\\": ' + str(accessPattern.value)
 
 		if self.first != None or self.second != None or self.third != None:
-			requestStructure += ',' + '"children": ['
+			requestStructure += ',' + '\\"children\\": ['
 			if self.first != None:
 				requestStructure += self.first[0].traverseTree(self.first[1])
 			if self.second != None:
