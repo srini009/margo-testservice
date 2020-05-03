@@ -97,6 +97,7 @@ class Service:
 		filename = self.name + str("_client.h")
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
+		f.write("#include " + self.name + "_server.h\n\n")
 		op_enum_string = "enum " + self.name + "_optype {\n"
 
 		for index, op in enumerate(self.opTypes):
@@ -276,22 +277,22 @@ class MochiExperiment:
 			f.write(service_provider_handle_definitions)
 			service.generateHeaders(service_id)
 
-		service_generate_request = "inline void generate_request(int service_id, int microservice_id, enum AccessPattern p, int workload_factor, hg_bulk_t, hg_string_t request_structure, int32_t *partial_result) {\n"
+		service_generate_request = "void generate_request(int service_id, int microservice_id, enum AccessPattern p, int workload_factor, hg_bulk_t bulk, hg_string_t request_structure, int32_t *partial_result) {\n"
 		service_generate_request += "   switch(service_id) {\n"
 		for service_id, service in enumerate(self.services):
 			service_generate_request += "     case(" + str(service_id) + "):\n"
 			service_generate_request += "       switch(microservice_id) {\n"
 			service_generate_request += "         case(0):\n"
-			service_generate_request += "           network_do_work(" + service.name + "_service_generate_network_provider_handle(p), workload_factor, bulk, request_structure, &partial_result);\n"
+			service_generate_request += "           network_do_work(" + service.name + "_service_generate_network_provider_handle(p), workload_factor, bulk, request_structure, partial_result);\n"
 			service_generate_request += "           break;\n"
 			service_generate_request += "         case(1):\n"
-			service_generate_request += "           compute_do_work(" + service.name + "_service_generate_compute_provider_handle(p), workload_factor, bulk, request_structure, &partial_result);\n"
+			service_generate_request += "           compute_do_work(" + service.name + "_service_generate_compute_provider_handle(p), workload_factor, bulk, request_structure, partial_result);\n"
 			service_generate_request += "           break;\n"
 			service_generate_request += "         case(2):\n"
-			service_generate_request += "           memory_do_work(" + service.name + "_service_generate_memory_provider_handle(p), workload_factor, bulk, request_structure, &partial_result);\n"
+			service_generate_request += "           memory_do_work(" + service.name + "_service_generate_memory_provider_handle(p), workload_factor, bulk, request_structure, partial_result);\n"
 			service_generate_request += "           break;\n"
 			service_generate_request += "         case(3):\n"
-			service_generate_request += "           storage_do_work(" + service.name + "_service_generate_storage_provider_handle(p), workload_factor, bulk, request_structure, &partial_result);\n"
+			service_generate_request += "           storage_do_work(" + service.name + "_service_generate_storage_provider_handle(p), workload_factor, bulk, request_structure, partial_result);\n"
 			service_generate_request += "           break;\n"
 			service_generate_request += "       }\n"
 			service_generate_request += "       break;\n"

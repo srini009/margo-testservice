@@ -98,7 +98,8 @@ static void compute_do_work_ult(hg_handle_t h)
     for (int i = 0 ; i < in.workload_factor*COMPUTE_CYCLES; i++)
       out.ret = out.ret + (45 + 69)*2 + i;
 
-    storage_do_work(GENERATE_PROVIDER_HANDLE(dummy, storage, 1), in.workload_factor, in.bulk, in.request_structure, &partial_result);
+    //storage_do_work(GENERATE_PROVIDER_HANDLE(dummy, storage, 1), in.workload_factor, in.bulk, in.request_structure, &partial_result);
+    GENERATE_DOWNSTREAM_REQUESTS(in.request_structure, in.workload_factor, in.bulk, &partial_result);
 
     ret = margo_respond(h, &out);
     assert(ret == HG_SUCCESS);

@@ -1,4 +1,3 @@
-#include "../common.h"
 #include "memory-client.h"
 
 struct memory_client {

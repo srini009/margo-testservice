@@ -3,7 +3,6 @@
 #include <margo.h>
 #include <mpi.h>
 #include <unistd.h>
-#include "user_services.h"
 #include "network-client.h"
 #include "include/defaults.h"
 

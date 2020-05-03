@@ -1,4 +1,3 @@
-#include "../common.h"
 #include "compute-client.h"
 
 struct compute_client {

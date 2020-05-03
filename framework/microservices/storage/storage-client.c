@@ -1,4 +1,3 @@
-#include "../common.h"
 #include "storage-client.h"
 
 struct storage_client {

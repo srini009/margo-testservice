@@ -1,4 +1,3 @@
-#include "../common.h"
 #include "network-client.h"
 
 struct network_client {

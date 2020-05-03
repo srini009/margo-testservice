@@ -2,8 +2,8 @@
 #define __COMPUTE_CLIENT_H
 
 #include <margo.h>
-#include "../common.h"
 #include "compute-common.h"
+#include "../../include/types.h"
 
 #if defined(__cplusplus)
 extern "C" {
