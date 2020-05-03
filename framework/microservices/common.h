@@ -69,6 +69,7 @@ void extract_next_link_info(jsmntok_t *t, int array_index, int *end_last_child, 
      char subrequest[2000]; \
      int microservice_id, accessPattern, service_id; \
      extract_next_link_info(t, index, &end_last_child, r, request_structure, subrequest, &service_id, &microservice_id, &accessPattern); \
+     fprintf(stderr, "Next link is: %d, and access pattern: %d\n", microservice_id, accessPattern); \
      generate_request(service_id, microservice_id, accessPattern, workload_factor, bulk_handle, subrequest, partial_result); \
   } \
 

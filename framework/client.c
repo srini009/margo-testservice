@@ -6,6 +6,8 @@
 #include "network-client.h"
 #include "include/defaults.h"
 
+#include "dummy_client.h"
+
 int main(int argc, char** argv)
 {
     if(argc != 2) {
@@ -56,7 +58,9 @@ int main(int argc, char** argv)
     int32_t * values = (int32_t*)calloc(TRANSFER_SIZE, sizeof(int32_t));
     hg_size_t size = TRANSFER_SIZE*sizeof(int32_t);
     int32_t true_sleeptime;
-    hg_string_t request_structure = "dummy";
+    hg_string_t request_structure = get_dummy_service_request_structure(testing);
+
+    fprintf(stderr, "Request structure is :%s\n", request_structure);
 
     hg_bulk_t local_bulk;
     margo_bulk_create(mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);

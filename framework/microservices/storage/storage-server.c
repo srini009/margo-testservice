@@ -88,7 +88,8 @@ static void storage_do_work_ult(hg_handle_t h)
     symbio_in_t     in;
     symbio_out_t   out;
 
-    struct rec r;
+    struct rec record;
+    int32_t partial_result;
 
     FILE *fp = fopen("/dev/shm/junk", "w");
     margo_instance_id mid = margo_hg_handle_get_instance(h);
@@ -100,9 +101,11 @@ static void storage_do_work_ult(hg_handle_t h)
 
     /* Do I/O work */
     for(int i = 0; i < in.workload_factor * FILE_SIZE; i++) {
-      r.x = i;
-      fwrite(&r,sizeof(struct rec),1,fp);
+      record.x = i;
+      fwrite(&record,sizeof(struct rec),1,fp);
     }
+
+    GENERATE_DOWNSTREAM_REQUESTS(in.request_structure, in.workload_factor, in.bulk, &partial_result);
 
     remove("/dev/shm/junk");
     fclose(fp);

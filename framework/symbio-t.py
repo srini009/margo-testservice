@@ -5,6 +5,10 @@
 
 from enum import Enum
 
+#HACK ALERT
+#Make sure this matches the generate_request switch case
+microservice_function_ids = {"network_do_work": 0, "memory_do_work": 1, "compute_do_work": 2, "storage_do_work": 3}
+
 class Microservice(Enum):
 	Network = "network"
 	Memory = "memory"
@@ -50,25 +54,25 @@ class OperationTree:
 		self.second = second
 		self.third = third
 
-	def traverseTree(self, accessPattern=None, isFirstChild=True):
+	def traverseTree(self, id_, accessPattern=None, isFirstChild=True):
 		requestStructure = ""
                 if isFirstChild: 
 			requestStructure += '{'
 		else:
 			requestStructure += ',{'
 		
-		requestStructure += '\\"microservice_function\\": ' + '\\"'+str(self.microservice_function) + '\\"'
+		requestStructure += '\\"service_id\\": ' + str(id_) + ', \\"microservice_function\\": ' + str(microservice_function_ids[str(self.microservice_function)]) 
 		if accessPattern != None:
 			requestStructure += ',' + '\\"accessPattern\\": ' + str(accessPattern.value)
 
 		if self.first != None or self.second != None or self.third != None:
 			requestStructure += ',' + '\\"children\\": ['
 			if self.first != None:
-				requestStructure += self.first[0].traverseTree(self.first[1])
+				requestStructure += self.first[0].traverseTree(id_, self.first[1])
 			if self.second != None:
-				requestStructure += self.second[0].traverseTree(self.second[1], False)
+				requestStructure += self.second[0].traverseTree(id_, self.second[1], False)
 			if self.third != None:
-				requestStructure += self.third[0].traverseTree(self.third[1], False)
+				requestStructure += self.third[0].traverseTree(id_, self.third[1], False)
 			requestStructure += ']'
 		requestStructure += "}"
 		return requestStructure
@@ -97,7 +101,6 @@ class Service:
 		filename = self.name + str("_client.h")
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
-		f.write("#include " + self.name + "_server.h\n\n")
 		op_enum_string = "enum " + self.name + "_optype {\n"
 
 		for index, op in enumerate(self.opTypes):
@@ -109,10 +112,10 @@ class Service:
 
 		f.write(op_enum_string)
 		
-		op_structure_getter_func = "const char* get_" + self.name + "_service_request_structure(" + self.name + "_optype op) {\n"
+		op_structure_getter_func = "char* get_" + self.name + "_service_request_structure(" + self.name + "_optype op) {\n"
 		op_structure_getter_func += "\tswitch(op) {\n"
 		for op in self.opTypes:
-			op_structure_getter_func += "\t case " + op.name + ":\n" + "\t  return \"" + str(op.opTree.traverseTree()) + "\";\n"
+			op_structure_getter_func += "\t case " + op.name + ":\n" + "\t  return \"" + str(op.opTree.traverseTree(id_)) + "\";\n"
 		op_structure_getter_func += "\t}\n}"
 		f.write(op_structure_getter_func)
 		f.flush()
@@ -318,8 +321,19 @@ def main():
 	s.addMicroservice(MemoryMicroservice(1))
 	s.addOperationType(op1)
 	s.addOperationType(op2)
+
+	#Generate test data
+	a_ = OperationTree(ComputeMicroservice.functions[0])
+	b_ = OperationTree(NetworkMicroservice.functions[0], (a_, AccessPattern.Fixed))
+	s_ = Service("dummy")
+	s_.addMicroservice(NetworkMicroservice(1))
+	s_.addMicroservice(ComputeMicroservice(1))
+	s_.addMicroservice(StorageMicroservice(1))
+	s_.addMicroservice(MemoryMicroservice(1))
+	op = OperationType("testing", b_)
+	s_.addOperationType(op)
 	m = MochiExperiment("test")
-	m.addService(s)
+	m.addService(s_)
 	m.generateHeaders()
 
 main()

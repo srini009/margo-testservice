@@ -5,7 +5,7 @@
 
 #include "include/jsmn.h"
 
-static char js[] = "{\"microservice_function\": \"storage_do_work\",\"children\": [{\"microservice_function\": \"compute_do_work\",\"accessPattern\": 1,\"children\": [{\"microservice_function\": \"network_do_work\",\"accessPattern\": 0},{\"microservice_function\": \"network_do_work\",\"accessPattern\": 1}]}]}";
+static char js[] = "{\"service_id\": 0, \"microservice_function\": 2,\"children\": [{\"service_id\": 0, \"microservice_function\": 0,\"accessPattern\": 0},{\"service_id\": 0, \"microservice_function\": 0,\"accessPattern\": 1}]}";
 
 void substring(char s[], char sub[], int p, int l) {
    int c = 0;
@@ -32,20 +32,30 @@ int num_children(jsmntok_t *t, int num, int *index) {
   return n;
 }
 
-void extract_next_link_info(jsmntok_t *t, int array_index, int *end_last_child, int length, char *request, char *subrequest, int *microservice_function, int *accessPattern) {
+void extract_next_link_info(jsmntok_t *t, int array_index, int *end_last_child, int length, char *request, char *subrequest, int *service_id, int *microservice_id, int *accessPattern) {
 
   /*Extract endpoints of the nth child*/
-  char fname[50], ap[50];
+  char fname[50], ap[50], sname[50];
   for(int i = array_index; i < length; i++) {
     if(t[i].type == JSMN_OBJECT && t[i].start == (*end_last_child)+1) {
       fprintf(stderr, "A child is at %d, %d\n", t[i].start, t[i].end);
       *end_last_child = t[i].end;
       substring(request, subrequest, t[i].start+1, (t[i].end-t[i].start));
       fprintf(stderr, "Subrequest is %s\n", subrequest);
-      assert(t[i+4].type == JSMN_PRIMITIVE);
-      substring(request, ap, t[i+4].start+1, 1);
-      *accessPattern = atoi(ap);
       fprintf(stderr, "Accesspattern is %d\n", *accessPattern); 
+      assert(t[i+2].type == JSMN_PRIMITIVE);
+      substring(request, sname, t[i+2].start+1, 1);
+      *service_id = atoi(sname);
+
+      assert(t[i+4].type == JSMN_PRIMITIVE);
+      substring(request, fname, t[i+4].start+1, 1);
+      *microservice_id = atoi(fname);
+
+      assert(t[i+6].type == JSMN_PRIMITIVE);
+      substring(request, ap, t[i+6].start+1, 1);
+      *accessPattern = atoi(ap);
+
+      fprintf(stderr, "Service id: %d, Microservice_function: %d, Accesspattern: %d\n", *service_id, *microservice_id, *accessPattern); 
     }
   }
 }
@@ -69,9 +79,9 @@ int main() {
   int end_last_child = t[index].start;
   for(int child = 0; child < n_children; child++) {
      char subrequest[2000];
-     int microservice_function, accessPattern;
+     int microservice_function, accessPattern, service_id;
      fprintf(stderr, "End last child is %d\n", end_last_child);
-     extract_next_link_info(t, index, &end_last_child, r, js, subrequest, &microservice_function, &accessPattern);
+     extract_next_link_info(t, index, &end_last_child, r, js, subrequest, &service_id, &microservice_function, &accessPattern);
      //Call function
      switch(microservice_function) {
           case 0:
