@@ -7,7 +7,7 @@ from enum import Enum
 
 #HACK ALERT
 #Make sure this matches the generate_request switch case
-microservice_function_ids = {"network_do_work": 0, "memory_do_work": 1, "compute_do_work": 2, "storage_do_work": 3}
+microservice_function_ids = {"network_do_work": 0, "compute_do_work": 1, "memory_do_work": 2, "storage_do_work": 3}
 
 class Microservice(Enum):
 	Network = "network"
@@ -324,14 +324,18 @@ def main():
 
 	#Generate test data
 	a_ = OperationTree(ComputeMicroservice.functions[0])
-	b_ = OperationTree(NetworkMicroservice.functions[0], (a_, AccessPattern.Fixed))
+	d_ = OperationTree(StorageMicroservice.functions[0])
+	b_ = OperationTree(NetworkMicroservice.functions[0], (a_, AccessPattern.Dynamic))
+	c_ = OperationTree(NetworkMicroservice.functions[0], (a_, AccessPattern.Fixed), (d_, AccessPattern.Dynamic)) 
 	s_ = Service("dummy")
 	s_.addMicroservice(NetworkMicroservice(1))
 	s_.addMicroservice(ComputeMicroservice(1))
 	s_.addMicroservice(StorageMicroservice(1))
 	s_.addMicroservice(MemoryMicroservice(1))
-	op = OperationType("testing", b_)
+	op = OperationType("testing", b_)	
+	op_ = OperationType("testing2", c_)	
 	s_.addOperationType(op)
+	s_.addOperationType(op_)
 	m = MochiExperiment("test")
 	m.addService(s_)
 	m.generateHeaders()
