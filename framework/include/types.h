@@ -16,4 +16,7 @@ enum AccessPattern {Fixed = 0, Dynamic = 1};
 
 enum Microservices {Network = 0, Memory = 1, Compute = 2, Storage = 3};
 
+typedef enum AccessPattern AccessPattern;
+typedef enum Microservices Microservices;
+
 #endif

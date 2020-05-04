@@ -20,6 +20,16 @@
 #include "memory-client.h"
 
 
+struct Workload {
+    hg_string_t *request_structure_array;
+    int *rate_array;
+    AccessPattern accessPattern;
+    int *workload_factor;
+    int N;
+};
+
+typedef struct Workload Workload;
+ 
 #define INIT_MARGO(connection_type, num_threads) \
     if(argc != 2) {\
         fprintf(stderr,"Usage: %s <number of server processes>\n", argv[0]);\
@@ -56,5 +66,17 @@
     }\
     margo_finalize(mid);\
     MPI_Finalize();
+
+#define GENERATE_WORKLOAD(service_name, op_array, workload_factor, rate, N, accessPattern, w) \
+   w.request_structure_array = (hg_string_t*)malloc(sizeof(hg_string_t)*N);\
+   w.rate_array = (int*) malloc(sizeof(int)*N);\
+   w.accessPattern = accessPattern;\
+   w.workload_factor = (int*) malloc(sizeof(int)*N);\
+   w.N = N;\
+   for(int i=0;i<N; i++) {\
+     w.rate_array[i] = rate[i];\
+     w.workload_factor[i] = workload_factor[i];\
+     w.request_structure_array[i] = get_##service_name##_service_request_structure(op_array[i]);\
+   }
 
 #endif
