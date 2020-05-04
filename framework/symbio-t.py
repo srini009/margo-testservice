@@ -117,6 +117,8 @@ class Service:
 		for op in self.opTypes:
 			op_structure_getter_func += "\t case " + op.name + ":\n" + "\t  return \"" + str(op.opTree.traverseTree(id_)) + "\";\n"
 		op_structure_getter_func += "\t}\n}"
+		
+		client_initialize_func = "void initialize_" + self.name + "_client("
 		f.write(op_structure_getter_func)
 		f.flush()
 		f.close()

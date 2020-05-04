@@ -1,4 +1,5 @@
 #include "network-client.h"
+#include "../../include/defaults.h"
 
 struct network_client {
    margo_instance_id mid;
@@ -111,8 +112,19 @@ int network_do_work(
     symbio_out_t out;
     hg_return_t ret;
 
+    hg_bulk_t local_bulk;
+    int32_t * values;
+    hg_size_t size;
+
     in.workload_factor = workload_factor;
-    in.bulk = bulk;
+    if(bulk != NULL) {
+      in.bulk = bulk;
+    } else {
+      values = (int32_t*)calloc(TRANSFER_SIZE*workload_factor, sizeof(int32_t));
+      size = TRANSFER_SIZE*workload_factor*sizeof(int32_t);
+      margo_bulk_create(handle->client->mid, 1, (void**)&values, &size, HG_BULK_READ_ONLY, &local_bulk);
+      in.bulk = local_bulk;
+    }
     in.request_structure = request_structure;
 
     ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
@@ -133,6 +145,11 @@ int network_do_work(
 
     *result = out.ret;
 
+    if(bulk == NULL) {
+      margo_bulk_free(local_bulk); 
+      free(values);
+    }
+    
     margo_free_output(h, &out);
     margo_destroy(h);
     return NETWORK_SUCCESS;
