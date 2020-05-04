@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "defaults.h"
+#include "jsmn.h"
 #include "network-client.h"
 #include "compute-client.h"
 #include "storage-client.h"
@@ -29,6 +30,55 @@ struct Workload {
 };
 
 typedef struct Workload Workload;
+
+void substring(char s[], char sub[], int p, int l) {
+   int c = 0;
+   
+   while (c < l) {
+      sub[c] = s[p+c-1];
+      c++;
+   }
+   sub[c] = '\0';
+}
+
+int num_children(jsmntok_t *t, int num, int *index) {
+
+  *index = -1;
+  int n = 0;
+  for(int i = 0; i < num; i++) {
+    if(t[i].type == JSMN_ARRAY) {
+      n = t[i].size;
+      *index = i;
+      break;  
+    }
+  } 
+
+  return n;
+}
+
+void extract_first_link_info(jsmntok_t *t, char *request) {
+
+  char fname[50];
+  for(int i = array_index; i < length; i++) {
+    if(t[i].type == JSMN_OBJECT && t[i].start == (*end_last_child)+1) {
+      *end_last_child = t[i].end;
+      substring(request, subrequest, t[i].start+1, (t[i].end-t[i].start));
+
+      assert(t[i+2].type == JSMN_PRIMITIVE);
+      substring(request, sname, t[i+2].start+1, 1);
+      *service_id = atoi(sname);
+
+      assert(t[i+4].type == JSMN_PRIMITIVE);
+      substring(request, fname, t[i+4].start+1, 1);
+      *microservice_id = atoi(fname);
+
+      assert(t[i+6].type == JSMN_PRIMITIVE);
+      substring(request, ap, t[i+6].start+1, 1);
+      *accessPattern = atoi(ap);
+      break;
+    }
+  }
+}
  
 #define INIT_MARGO(connection_type, num_threads) \
     if(argc != 2) {\
