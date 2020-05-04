@@ -34,10 +34,10 @@
     MPI_Barrier(MPI_COMM_WORLD);
 
 #define INIT_CLIENT(name) \
-    initialize_##name##_client(mid, comm_size); 
+    initialize_##name##_client(mid, num_servers); 
 
 #define FINALIZE_CLIENT(name) \
-    finalize_##name##_client(mid, comm_size); 
+    finalize_##name##_client(mid, num_servers); 
 
 #define FINALIZE_MARGO(enable_remote_shutdown) \
     if(!rank) {\

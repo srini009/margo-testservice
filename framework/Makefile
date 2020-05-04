@@ -21,7 +21,7 @@ all: ./microservices/compute/compute-server.c ./microservices/compute/compute-cl
 	$(CC) -c $(CFLAGS) server.c -o server.o
 	$(CC) -c $(CFLAGS) client.c -o client.o
 	$(CC) -o server server.o -L. -lcompute-client -lcompute-server -lmemory-client -lmemory-server -lnetwork-client -lnetwork-server -lstorage-client -lstorage-server -lmargo $(LIBS) 
-	$(CC) -o client client.o -L. -lnetwork-client -lmargo $(LIBS)
+	$(CC) -o client client.o -L. -lnetwork-client -lmemory-client -lstorage-client -lcompute-client -lmargo $(LIBS)
 
 clean:
 	rm *.o *.csv *.trace *.stats client server core* *.so server_addr* *.pdf hosts* rm *_server.h *_client.h user_services.h *provider_ids*

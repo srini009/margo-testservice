@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
     for(int i=0; i < NUM_REQUESTS; i++) {
-      network_do_work(network_ph, 1, local_bulk, request_structure, &result);
+      network_do_work(network_ph, 1, NULL, request_structure, &result);
     }
 
     network_provider_handle_release(network_ph);
