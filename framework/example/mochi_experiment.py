@@ -12,7 +12,7 @@ def main():
 	b = OperationTree(NetworkMicroservice.functions[0], (a, AccessPattern.Dynamic))
 	c = OperationTree(NetworkMicroservice.functions[0], (a, AccessPattern.Fixed), (d, AccessPattern.Dynamic))
 	f = OperationTree(MemoryMicroservice.functions[0])
-	e = OperationTree(NetworkMicroservice.functions[0], (f, AccessPattern.Fixed))
+	e = OperationTree(NetworkMicroservice.functions[0], (f, AccessPattern.Dynamic))
 
 	op1 = OperationType("op1", b) #b is root of operation tree
 	op2 = OperationType("op2", c) #c is root of operation tree	

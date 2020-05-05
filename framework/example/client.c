@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
    for(int i = 0; i < N; i++) {
        op_[i] = op3;
        rate_[i] = DEFAULT_REQUEST_RATE;
-       workload_factor_[i] = 1;
+       workload_factor_[i] = 10;
    }
 
    accessPattern_ = Dynamic; 

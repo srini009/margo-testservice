@@ -107,18 +107,18 @@ void extract_first_link_info(jsmntok_t *t, char *request, int *microservice_id, 
     margo_finalize(mid);\
     MPI_Finalize();
 
-#define GENERATE_WORKLOAD(service_name, op_array, workload_factor, rate, N, accessPattern, w) \
-   w.request_structure_array = (hg_string_t*)malloc(sizeof(hg_string_t)*N);\
-   w.rate_array = (int*) malloc(sizeof(int)*N);\
-   w.accessPattern = accessPattern;\
-   w.workload_factor = (int*) malloc(sizeof(int)*N);\
-   w.op = (int*) malloc(sizeof(int)*N);\
-   w.service_id = (int*) malloc(sizeof(int)*N);\
-   w.N = N;\
+#define GENERATE_WORKLOAD(service_name, op_array, wf, r, nn, ap, w) \
+   w.request_structure_array = (hg_string_t*)malloc(sizeof(hg_string_t)*nn);\
+   w.rate_array = (int*) malloc(sizeof(int)*nn);\
+   w.accessPattern = ap;\
+   w.workload_factor = (int*) malloc(sizeof(int)*nn);\
+   w.op = (int*) malloc(sizeof(int)*nn);\
+   w.service_id = (int*) malloc(sizeof(int)*nn);\
+   w.N = nn;\
    for(int i=0;i<N; i++) {\
      jsmntok_t t[128]; /* We expect no more than 128 JSON tokens */\
-     w.rate_array[i] = rate[i];\
-     w.workload_factor[i] = workload_factor[i];\
+     w.rate_array[i] = r[i];\
+     w.workload_factor[i] = wf[i];\
      w.request_structure_array[i] = get_##service_name##_service_request_structure(op_array[i]);\
      jsmn_parse(&p, w.request_structure_array[i], strlen(w.request_structure_array[i]), t, 128); \
      extract_first_link_info(t, w.request_structure_array[i], &w.op[i], &w.service_id[i]);\
