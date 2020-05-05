@@ -139,6 +139,7 @@ void extract_first_link_info(jsmntok_t *t, char *request, int *microservice_id, 
        }\
        break;\
    }\
+   MPI_Barrier(MPI_COMM_WORLD);
 
 #define CLEANUP_WORKLOAD(w) \
    free(w.request_structure_array);\
