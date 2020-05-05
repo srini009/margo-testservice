@@ -1,4 +1,4 @@
-#include "include/client_helper.h"
+#include "client_helper.h"
 #include "dummy_client.h"
 
 int main(int argc, char **argv) {

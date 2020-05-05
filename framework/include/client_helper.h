@@ -16,7 +16,7 @@
 #include "defaults.h"
 #include "jsmn.h"
 
-#include "../user_clients.h"
+#include <user_clients.h>
 
 struct Workload {
     hg_string_t *request_structure_array;

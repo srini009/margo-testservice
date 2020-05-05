@@ -1,4 +1,4 @@
-#include "include/service_macros.h"
+#include "service_macros.h"
 #include "dummy_server.h"
 
 int main(int argc, char** argv)

@@ -332,10 +332,10 @@ class MochiExperiment:
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
 		f.write("#ifndef USER_SERVICES_H\n#define USER_SERVICES_H\n\n")
-		f.write("#include \"microservices/compute/compute-client.h\"\n")
-		f.write("#include \"microservices/memory/memory-client.h\"\n")
-		f.write("#include \"microservices/network/network-client.h\"\n")
-		f.write("#include \"microservices/storage/storage-client.h\"\n\n")
+		f.write("#include \"compute-client.h\"\n")
+		f.write("#include \"memory-client.h\"\n")
+		f.write("#include \"network-client.h\"\n")
+		f.write("#include \"storage-client.h\"\n\n")
 
 		for service_id, service in enumerate(self.services):
 			f.write("/* " + service.name + " service definitions */ \n")
@@ -377,10 +377,10 @@ class MochiExperiment:
 		f = open(filename, "w")
 		f.write(self.legal_boilerplate)
 		f.write("#ifndef USER_CLIENTS_H\n#define USER_CLIENTS_H\n\n")
-		f.write("#include \"microservices/compute/compute-client.h\"\n")
-		f.write("#include \"microservices/memory/memory-client.h\"\n")
-		f.write("#include \"microservices/network/network-client.h\"\n")
-		f.write("#include \"microservices/storage/storage-client.h\"\n\n")
+		f.write("#include \"compute-client.h\"\n")
+		f.write("#include \"memory-client.h\"\n")
+		f.write("#include \"network-client.h\"\n")
+		f.write("#include \"storage-client.h\"\n\n")
 
 		for service_id, service in enumerate(self.services):
 			f.write("/* " + service.name + " service definitions */ \n")
@@ -416,39 +416,3 @@ class MochiExperiment:
 		f.write("#endif")
 		f.flush()
 		f.close()
-	
-def main():
-	a = OperationTree(NetworkMicroservice.functions[0])
-	b = OperationTree(ComputeMicroservice.functions[0], (a, AccessPattern.Fixed), (a, AccessPattern.Dynamic))
-	c = OperationTree(StorageMicroservice.functions[0], (b, AccessPattern.Dynamic))
-
-	op1 = OperationType("op1", c)
-	op2 = OperationType("op2", b)
-	s = Service("dummy")
-	s.addMicroservice(NetworkMicroservice(2))
-	s.addMicroservice(ComputeMicroservice(1))
-	s.addMicroservice(StorageMicroservice(1))
-	s.addMicroservice(MemoryMicroservice(1))
-	s.addOperationType(op1)
-	s.addOperationType(op2)
-
-	#Generate test data
-	a_ = OperationTree(ComputeMicroservice.functions[0])
-	d_ = OperationTree(StorageMicroservice.functions[0])
-	b_ = OperationTree(NetworkMicroservice.functions[0], (a_, AccessPattern.Dynamic))
-	c_ = OperationTree(NetworkMicroservice.functions[0], (a_, AccessPattern.Fixed), (d_, AccessPattern.Dynamic)) 
-	s_ = Service("dummy")
-	s_.addMicroservice(NetworkMicroservice(1))
-	s_.addMicroservice(ComputeMicroservice(1))
-	s_.addMicroservice(StorageMicroservice(1))
-	s_.addMicroservice(MemoryMicroservice(1))
-	op = OperationType("op1", b_)	
-	op_ = OperationType("op2", c_)	
-	s_.addOperationType(op)
-	s_.addOperationType(op_)
-	m = MochiExperiment("test")
-	m.addService(s_)
-	m.generateHeaders()
-
-main()
-

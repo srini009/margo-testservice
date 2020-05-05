@@ -1,21 +1,23 @@
-CC=mpicc
-CFLAGS = -I/. -I/include -I./microservices/compute -I./microservices/memory -I./microservices/network -I./microservices/storage -g
+SYMBIONT=#User sets this to the base install directory
 
-all: ./microservices/compute/compute-server.c ./microservices/compute/compute-client.c ./microservices/memory/memory-server.c ./microservices/memory/memory-client.c ./microservices/network/network-server.c ./microservices/network/network-client.c ./microservices/storage/storage-client.c ./microservices/storage/storage-server.c  server.c client.c
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/compute/compute-server.c -o compute-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/compute/compute-client.c -o compute-client.o
+CC=mpicc
+CFLAGS = -I/. -I$(SYMBIONT)/include -I$(SYMBIONT)/microservices/compute -I$(SYMBIONT)/microservices/memory -I$(SYMBIONT)/microservices/network -I$(SYMBIONT)/microservices/storage -g
+
+all: $(SYMBIONT)/microservices/compute/compute-server.c $(SYMBIONT)/microservices/compute/compute-client.c $(SYMBIONT)/microservices/memory/memory-server.c $(SYMBIONT)/microservices/memory/memory-client.c $(SYMBIONT)/microservices/network/network-server.c $(SYMBIONT)/microservices/network/network-client.c $(SYMBIONT)/microservices/storage/storage-client.c $(SYMBIONT)/microservices/storage/storage-server.c  server.c client.c
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/compute/compute-server.c -o compute-server.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/compute/compute-client.c -o compute-client.o
 	$(CC) -shared -o libcompute-client.so compute-client.o
 	$(CC) -shared -o libcompute-server.so compute-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/memory/memory-server.c -o memory-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/memory/memory-client.c -o memory-client.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/memory/memory-server.c -o memory-server.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/memory/memory-client.c -o memory-client.o
 	$(CC) -shared -o libmemory-client.so memory-client.o
 	$(CC) -shared -o libmemory-server.so memory-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/network/network-server.c -o network-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/network/network-client.c -o network-client.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/network/network-server.c -o network-server.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/network/network-client.c -o network-client.o
 	$(CC) -shared -o libnetwork-client.so network-client.o
 	$(CC) -shared -o libnetwork-server.so network-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/storage/storage-server.c -o storage-server.o
-	$(CC) -c $(CFLAGS) -fPIC ./microservices/storage/storage-client.c -o storage-client.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/storage/storage-server.c -o storage-server.o
+	$(CC) -c $(CFLAGS) -fPIC $(SYMBIONT)/microservices/storage/storage-client.c -o storage-client.o
 	$(CC) -shared -o libstorage-client.so storage-client.o
 	$(CC) -shared -o libstorage-server.so storage-server.o
 	$(CC) -c $(CFLAGS) server.c -o server.o
