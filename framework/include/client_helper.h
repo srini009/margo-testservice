@@ -15,14 +15,13 @@
 
 #include "defaults.h"
 #include "jsmn.h"
-#include "network-client.h"
-#include "compute-client.h"
-#include "storage-client.h"
-#include "memory-client.h"
 
+#include "../user_clients.h"
 
 struct Workload {
     hg_string_t *request_structure_array;
+    int *op;
+    int *service_id;
     int *rate_array;
     AccessPattern accessPattern;
     int *workload_factor;
@@ -56,28 +55,15 @@ int num_children(jsmntok_t *t, int num, int *index) {
   return n;
 }
 
-void extract_first_link_info(jsmntok_t *t, char *request) {
+void extract_first_link_info(jsmntok_t *t, char *request, int *microservice_id, int *service_id) {
+  char fname[50], sname[50];
+  assert(t[2].type == JSMN_PRIMITIVE);
+  substring(request, fname, t[2].start+1, 1);
+  *service_id = atoi(sname);
 
-  char fname[50];
-  for(int i = array_index; i < length; i++) {
-    if(t[i].type == JSMN_OBJECT && t[i].start == (*end_last_child)+1) {
-      *end_last_child = t[i].end;
-      substring(request, subrequest, t[i].start+1, (t[i].end-t[i].start));
-
-      assert(t[i+2].type == JSMN_PRIMITIVE);
-      substring(request, sname, t[i+2].start+1, 1);
-      *service_id = atoi(sname);
-
-      assert(t[i+4].type == JSMN_PRIMITIVE);
-      substring(request, fname, t[i+4].start+1, 1);
-      *microservice_id = atoi(fname);
-
-      assert(t[i+6].type == JSMN_PRIMITIVE);
-      substring(request, ap, t[i+6].start+1, 1);
-      *accessPattern = atoi(ap);
-      break;
-    }
-  }
+  assert(t[4].type == JSMN_PRIMITIVE);
+  substring(request, fname, t[4].start+1, 1);
+  *microservice_id = atoi(fname);
 }
  
 #define INIT_MARGO(connection_type, num_threads) \
@@ -87,11 +73,15 @@ void extract_first_link_info(jsmntok_t *t, char *request) {
     }\
     MPI_Init(&argc, &argv);\
     int rank, comm_size;\
+    int result;\
     int num_servers = atoi(argv[1]);\
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);\
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);\
     margo_instance_id mid = margo_init(#connection_type, MARGO_CLIENT_MODE, 0, num_threads);\
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);\
+    jsmn_parser p; \
+    jsmn_init(&p); \
+    int my_assigned_server = rand()%num_servers;
 
 #define INIT_CLIENT(name) \
     initialize_##name##_client(mid, num_servers); 
@@ -122,11 +112,39 @@ void extract_first_link_info(jsmntok_t *t, char *request) {
    w.rate_array = (int*) malloc(sizeof(int)*N);\
    w.accessPattern = accessPattern;\
    w.workload_factor = (int*) malloc(sizeof(int)*N);\
+   w.op = (int*) malloc(sizeof(int)*N);\
+   w.service_id = (int*) malloc(sizeof(int)*N);\
    w.N = N;\
    for(int i=0;i<N; i++) {\
+     jsmntok_t t[128]; /* We expect no more than 128 JSON tokens */\
      w.rate_array[i] = rate[i];\
      w.workload_factor[i] = workload_factor[i];\
      w.request_structure_array[i] = get_##service_name##_service_request_structure(op_array[i]);\
+     jsmn_parse(&p, w.request_structure_array[i], strlen(w.request_structure_array[i]), t, 128); \
+     extract_first_link_info(t, w.request_structure_array[i], &w.op[i], &w.service_id[i]);\
    }
+
+#define RUN_WORKLOAD(service_name, w) \
+   switch(w.accessPattern) {\
+     case(Fixed): \
+       for(int i = 0; i < w.N; i++) {\
+         generate_request(w.service_id[i], w.op[i], w.accessPattern, w.workload_factor[i], NULL, w.request_structure_array[i], my_assigned_server, &result);\
+         usleep(w.rate_array[i]);\
+       }\
+       break;\
+     case(Dynamic): \
+       for(int i = 0; i < w.N; i++) {\
+         generate_request(w.service_id[i], w.op[i], w.accessPattern, w.workload_factor[i], NULL, w.request_structure_array[i], num_servers, &result);\
+         usleep(w.rate_array[i]);\
+       }\
+       break;\
+   }\
+
+#define CLEANUP_WORKLOAD(w) \
+   free(w.request_structure_array);\
+   free(w.rate_array);\
+   free(w.workload_factor);\
+   free(w.op);\
+   free(w.service_id);
 
 #endif

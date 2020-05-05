@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 
    INIT_CLIENT(dummy);
 
-   /* Generate a workload*/
+   /* Generate a workload */
    Workload w;
 
    dummy_optype op[100];
@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
 
    GENERATE_WORKLOAD(dummy, op, workload_factor, rate, N, accessPattern, w);
 
-   //RUN_WORKLOAD(w);
+   RUN_WORKLOAD(dummy, w);
    
-   //CLEANUP_WORKLOAD(w);
+   CLEANUP_WORKLOAD(w);
 
    FINALIZE_CLIENT(dummy);
 

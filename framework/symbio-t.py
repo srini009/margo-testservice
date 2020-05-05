@@ -165,13 +165,25 @@ class Service:
 			client_finalize_function += "    " + microservice.microservice_type.value + "_provider_handle_release(" + self.name + "_" + microservice.microservice_type.value +"_remote_ph[i]);\n"
 			client_finalize_function += "  }\n"
 			client_finalize_function += "  " + microservice.microservice_type.value + "_client_finalize(" + self.name + "_" + microservice.microservice_type.value + "_clt);\n\n"
-			
 		client_finalize_function += "}\n\n"	
+			
+		client_provider_handle_generation = ""
+		for microservice in self.microservices:
+			client_provider_handle_generation += microservice.microservice_type.value + "_provider_handle_t " + self.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(enum AccessPattern p, int randomizer) {\n"
+			client_provider_handle_generation += "  switch(p) {\n"
+			client_provider_handle_generation += "    case(Fixed): \n"
+			client_provider_handle_generation += "      return " + self.name + "_" + microservice.microservice_type.value + "_remote_ph[randomizer*" + self.name + "_service_N_" + microservice.microservice_type.value + "];\n"
+			client_provider_handle_generation += "    case(Dynamic): \n"
+			client_provider_handle_generation += "      return " + self.name + "_" + microservice.microservice_type.value + "_remote_ph[rand()%" + self.name + "_service_N_" + microservice.microservice_type.value + "*randomizer];\n"
+			client_provider_handle_generation += "  }\n"
+			client_provider_handle_generation += "}\n\n"
+
 		f.write(client_provider_num_constants)
 		f.write(client_providers)
 		f.write(op_structure_getter_func)
 		f.write(client_initialize_func)
 		f.write(client_finalize_function)
+		f.write(client_provider_handle_generation)
 		f.flush()
 		f.close()
 
@@ -357,6 +369,50 @@ class MochiExperiment:
 		service_generate_request += "}\n\n"
 		f.write(service_generate_request) 
 				
+		f.write("#endif")
+		f.flush()
+		f.close()
+
+		filename = "user_clients.h"
+		f = open(filename, "w")
+		f.write(self.legal_boilerplate)
+		f.write("#ifndef USER_CLIENTS_H\n#define USER_CLIENTS_H\n\n")
+		f.write("#include \"microservices/compute/compute-client.h\"\n")
+		f.write("#include \"microservices/memory/memory-client.h\"\n")
+		f.write("#include \"microservices/network/network-client.h\"\n")
+		f.write("#include \"microservices/storage/storage-client.h\"\n\n")
+
+		for service_id, service in enumerate(self.services):
+			f.write("/* " + service.name + " service definitions */ \n")
+			service_provider_handle_definitions = ""
+			for microservice in service.microservices:
+				service_provider_handle_definitions += microservice.microservice_type.value + "_provider_handle_t " + service.name + "_service_generate_" + microservice.microservice_type.value + "_provider_handle(enum AccessPattern p, int randomizer);\n"
+			service_provider_handle_definitions += "\n\n"
+			f.write(service_provider_handle_definitions)
+
+		service_generate_request = "void generate_request(int service_id, int microservice_id, enum AccessPattern p, int workload_factor, hg_bulk_t bulk, hg_string_t request_structure, int32_t randomizer, int *partial_result) {\n"
+		service_generate_request += "   switch(service_id) {\n"
+		for service_id, service in enumerate(self.services):
+			service_generate_request += "     case(" + str(service_id) + "):\n"
+			service_generate_request += "       switch(microservice_id) {\n"
+			service_generate_request += "         case(0):\n"
+			service_generate_request += "           network_do_work(" + service.name + "_service_generate_network_provider_handle(p, randomizer), workload_factor, bulk, request_structure, partial_result);\n"
+			service_generate_request += "           break;\n"
+			service_generate_request += "         case(1):\n"
+			service_generate_request += "           compute_do_work(" + service.name + "_service_generate_compute_provider_handle(p, randomizer), workload_factor, bulk, request_structure, partial_result);\n"
+
+			service_generate_request += "           break;\n"
+			service_generate_request += "         case(2):\n"
+			service_generate_request += "           memory_do_work(" + service.name + "_service_generate_memory_provider_handle(p, randomizer), workload_factor, bulk, request_structure, partial_result);\n"
+			service_generate_request += "           break;\n"
+			service_generate_request += "         case(3):\n"
+			service_generate_request += "           storage_do_work(" + service.name + "_service_generate_storage_provider_handle(p, randomizer), workload_factor, bulk, request_structure, partial_result);\n"
+			service_generate_request += "           break;\n"
+			service_generate_request += "       }\n"
+			service_generate_request += "       break;\n"
+			service_generate_request += "  }\n"	
+		service_generate_request += "}\n\n"
+		f.write(service_generate_request) 
 		f.write("#endif")
 		f.flush()
 		f.close()
