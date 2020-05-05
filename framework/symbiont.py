@@ -365,7 +365,7 @@ class MochiExperiment:
 			service_generate_request += "           break;\n"
 			service_generate_request += "       }\n"
 			service_generate_request += "       break;\n"
-			service_generate_request += "  }\n"	
+		service_generate_request += "  }\n"
 		service_generate_request += "}\n\n"
 		f.write(service_generate_request) 
 				
@@ -410,7 +410,7 @@ class MochiExperiment:
 			service_generate_request += "           break;\n"
 			service_generate_request += "       }\n"
 			service_generate_request += "       break;\n"
-			service_generate_request += "  }\n"	
+		service_generate_request += "  }\n"
 		service_generate_request += "}\n\n"
 		f.write(service_generate_request) 
 		f.write("#endif")

@@ -1,11 +1,13 @@
 #include "client_helper.h"
 #include "dummy_client.h"
+#include "metoo_client.h"
 
 int main(int argc, char **argv) {
 
    INIT_MARGO(ofi+verbs, 0);
 
    INIT_CLIENT(dummy);
+   INIT_CLIENT(metoo);
 
    /* Generate a workload */
    Workload w;
@@ -35,8 +37,31 @@ int main(int argc, char **argv) {
    RUN_WORKLOAD(dummy, w);
    
    CLEANUP_WORKLOAD(w);
+   /* Generate a workload */
+   Workload y;
+
+   dummy_optype op_[100];
+   int N_ = 100;
+   int rate_[100];
+   int workload_factor_[100];
+   AccessPattern accessPattern_;
+
+   for(int i = 0; i < N; i++) {
+       op_[i] = op3;
+       rate_[i] = DEFAULT_REQUEST_RATE;
+       workload_factor_[i] = 1;
+   }
+
+   accessPattern_ = Dynamic; 
+
+   GENERATE_WORKLOAD(metoo, op_, workload_factor_, rate_, N_, accessPattern_, y);
+
+   RUN_WORKLOAD(metoo, y);
+   
+   CLEANUP_WORKLOAD(y);
 
    FINALIZE_CLIENT(dummy);
+   FINALIZE_CLIENT(metoo);
 
    FINALIZE_MARGO(1);
 }
